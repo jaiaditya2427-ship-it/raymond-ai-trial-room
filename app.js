@@ -1,76 +1,110 @@
+/* =========================
+   GLOBAL VARIABLES
+========================= */
+
+let currentFacingMode = "user"; // front camera default
+let stream;
+
 let customerImage = "";
 let clothImage = "";
 
-/* -----------------------------
-START CAMERA (BOTH)
------------------------------ */
-navigator.mediaDevices.getUserMedia({ video:true })
-.then(stream => {
+/* =========================
+   START CAMERA
+========================= */
 
-document.getElementById("customerCam").srcObject = stream;
-document.getElementById("clothCam").srcObject = stream;
+async function startCamera() {
 
-})
-.catch(err=>{
-alert("Camera access denied");
+try {
+
+if (stream) {
+stream.getTracks().forEach(track => track.stop());
+}
+
+stream = await navigator.mediaDevices.getUserMedia({
+video: {
+facingMode: currentFacingMode
+}
 });
 
-/* -----------------------------
-CAPTURE CUSTOMER
------------------------------ */
-function captureCustomer(){
+document.getElementById("video").srcObject = stream;
 
-const video = document.getElementById("customerCam");
-const canvas = document.getElementById("customerCanvas");
+} catch (err) {
+console.log("Camera error:", err);
+alert("Camera access denied or not supported");
+}
+
+}
+
+/* =========================
+   SWITCH CAMERA (FRONT/BACK)
+========================= */
+
+function switchCamera() {
+
+currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+startCamera();
+
+}
+
+/* =========================
+   CAPTURE IMAGE
+========================= */
+
+function capture() {
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
 
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
 
-canvas.getContext("2d").drawImage(video,0,0);
+canvas.getContext("2d").drawImage(video, 0, 0);
 
-customerImage = canvas.toDataURL("image/png");
+const image = canvas.toDataURL("image/png");
 
-document.getElementById("customerPreview").src = customerImage;
-document.getElementById("customerPreview").style.display = "block";
+customerImage = image; // store captured image
 
-}
-
-/* -----------------------------
-CAPTURE CLOTH
------------------------------ */
-function captureCloth(){
-
-const video = document.getElementById("clothCam");
-const canvas = document.getElementById("clothCanvas");
-
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
-
-canvas.getContext("2d").drawImage(video,0,0);
-
-clothImage = canvas.toDataURL("image/png");
-
-document.getElementById("clothPreview").src = clothImage;
-document.getElementById("clothPreview").style.display = "block";
+document.getElementById("preview").src = image;
+document.getElementById("preview").style.display = "block";
 
 }
 
-/* -----------------------------
-GENERATE TRY-ON (BACKEND CALL)
------------------------------ */
-async function generateTryOn(){
+/* =========================
+   SELECT CLOTH (IF USING IMAGE GRID)
+========================= */
 
-if(!customerImage || !clothImage){
-alert("Please capture both images");
+function selectCloth(src) {
+
+clothImage = src;
+alert("Cloth selected ✔");
+
+}
+
+/* =========================
+   GENERATE TRY-ON
+========================= */
+
+async function generateTryOn() {
+
+if (!customerImage) {
+alert("Please capture customer image first");
 return;
 }
 
-document.getElementById("result").innerHTML = "Generating AI Try-On... ✨";
+if (!clothImage) {
+alert("Please select cloth");
+return;
+}
+
+document.getElementById("result").innerHTML =
+"Generating AI Try-On... ✨";
+
+try {
 
 const res = await fetch("https://api.ideainfoline.com/tryon", {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
+method: "POST",
+headers: {
+"Content-Type": "application/json"
 },
 body: JSON.stringify({
 personImage: customerImage,
@@ -82,7 +116,21 @@ const data = await res.json();
 
 document.getElementById("result").innerHTML = `
 <h3>AI Result</h3>
-<img src="${data.result}" style="display:block;">
+<img src="${data.result}" style="width:100%;border-radius:12px;">
 `;
 
+} catch (err) {
+
+console.log(err);
+document.getElementById("result").innerHTML =
+"Error connecting backend ❌";
+
 }
+
+}
+
+/* =========================
+   INIT CAMERA ON LOAD
+========================= */
+
+startCamera();
