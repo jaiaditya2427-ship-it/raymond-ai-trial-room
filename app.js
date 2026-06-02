@@ -5,44 +5,27 @@ let capturedImage = "";
 let selectedCloth = "";
 
 /* ======================
-   START CAMERA (SAFE + FIXED)
+   CAMERA START
 ====================== */
 
-async function startCamera() {
+async function startCamera(){
 
-try {
+try{
 
-if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-alert("Camera not supported in this browser");
-return;
-}
-
-if (stream) {
-stream.getTracks().forEach(track => track.stop());
-stream = null;
+if(stream){
+stream.getTracks().forEach(t=>t.stop());
 }
 
 stream = await navigator.mediaDevices.getUserMedia({
-video: { facingMode: facingMode },
-audio: false
+video:{ facingMode: facingMode },
+audio:false
 });
 
-const video = document.getElementById("video");
-
-video.srcObject = stream;
-video.setAttribute("playsinline", true);
-video.setAttribute("autoplay", true);
-
-await video.play();
+document.getElementById("video").srcObject = stream;
 
 }catch(err){
-
 console.log(err);
-
-alert(
-"Camera blocked or not supported.\n\nIMPORTANT FIX:\n1. Open in HTTPS (Vercel / Hostinger)\n2. Use Chrome or Safari\n3. Allow camera permission\n4. Do NOT open from file or Koder preview"
-);
-
+alert("Camera not available. Use HTTPS + allow permission.");
 }
 
 }
@@ -51,18 +34,18 @@ alert(
    SWITCH CAMERA
 ====================== */
 
-async function switchCamera() {
+function switchCamera(){
 
 facingMode = (facingMode === "user") ? "environment" : "user";
-await startCamera();
+startCamera();
 
 }
 
 /* ======================
-   CAPTURE IMAGE
+   CAPTURE CUSTOMER
 ====================== */
 
-function capture() {
+function capture(){
 
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
@@ -70,7 +53,7 @@ const canvas = document.getElementById("canvas");
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
 
-canvas.getContext("2d").drawImage(video, 0, 0);
+canvas.getContext("2d").drawImage(video,0,0);
 
 capturedImage = canvas.toDataURL("image/png");
 
@@ -79,39 +62,48 @@ document.getElementById("preview").src = capturedImage;
 }
 
 /* ======================
-   SELECT CLOTH
+   CLOTH SELECT (LIVE PREMIUM CLICK)
 ====================== */
 
-function selectCloth(src) {
-selectedCloth = src;
-alert("Cloth selected ✔");
+function selectCloth(el){
+
+document.querySelectorAll(".cloth").forEach(img=>{
+img.classList.remove("active");
+});
+
+el.classList.add("active");
+
+selectedCloth = el.src;
+
 }
 
 /* ======================
-   TRY ON
+   AI TRY-ON
 ====================== */
 
-async function generateTryOn() {
+async function generateTryOn(){
 
-if (!capturedImage) {
-alert("Capture image first");
+if(!capturedImage){
+alert("Please capture customer image");
 return;
 }
 
-if (!selectedCloth) {
-alert("Select cloth first");
+if(!selectedCloth){
+alert("Please select outfit");
 return;
 }
 
 document.getElementById("result").innerHTML =
-"Generating AI Try-On...";
+"Generating luxury AI try-on...";
 
-try {
+try{
 
-const res = await fetch("https://api.ideainfoline.com/tryon", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
+const res = await fetch("https://api.ideainfoline.com/tryon",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
 personImage: capturedImage,
 clothImage: selectedCloth
 })
@@ -120,14 +112,14 @@ clothImage: selectedCloth
 const data = await res.json();
 
 document.getElementById("result").innerHTML =
-`<img src="${data.result}" style="width:100%;border-radius:12px;">`;
+`<img src="${data.result}" style="width:100%;border-radius:14px;">`;
 
 }catch(err){
 
 console.log(err);
 
 document.getElementById("result").innerHTML =
-"Server error";
+"AI failed. Try again.";
 
 }
 
