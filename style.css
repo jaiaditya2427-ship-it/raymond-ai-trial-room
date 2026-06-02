@@ -1,58 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
 body{
 margin:0;
-font-family:Arial;
-background:#f5f5f5;
+font-family:'Inter', sans-serif;
+background:linear-gradient(180deg,#f7f7f7,#ffffff);
 text-align:center;
+color:#111;
 }
 
 header{
 background:white;
-padding:15px;
-box-shadow:0 2px 10px rgba(0,0,0,0.1);
+padding:18px;
+box-shadow:0 2px 20px rgba(0,0,0,0.05);
+position:sticky;
+top:0;
+backdrop-filter:blur(10px);
+}
+
+header h2{
+margin:0;
+font-size:20px;
+letter-spacing:1px;
+font-weight:600;
 }
 
 .container{
-max-width:500px;
+max-width:520px;
 margin:auto;
-padding:15px;
+padding:16px;
 }
 
 .card{
 background:white;
-margin-top:15px;
-padding:15px;
-border-radius:12px;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-top:18px;
+padding:18px;
+border-radius:18px;
+box-shadow:0 10px 30px rgba(0,0,0,0.06);
+border:1px solid rgba(0,0,0,0.04);
+transition:0.3s ease;
+}
+
+.card:hover{
+transform:translateY(-2px);
+box-shadow:0 15px 40px rgba(0,0,0,0.08);
+}
+
+h3{
+font-size:16px;
+font-weight:600;
+margin-bottom:12px;
+color:#222;
 }
 
 video{
 width:100%;
-border-radius:12px;
-background:black;
+border-radius:14px;
+background:#000;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 
 img{
 width:100%;
-margin-top:10px;
-border-radius:12px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.grid img{
-cursor:pointer;
+margin-top:12px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
 
 button{
 width:100%;
 margin-top:10px;
-padding:12px;
-background:black;
+padding:14px;
+background:linear-gradient(135deg,#111,#333);
 color:white;
 border:none;
-border-radius:10px;
+border-radius:12px;
+font-weight:500;
+letter-spacing:0.5px;
+cursor:pointer;
+transition:0.25s ease;
+}
+
+button:active{
+transform:scale(0.97);
+}
+
+button:hover{
+opacity:0.95;
+}
+
+#result{
+margin-top:12px;
+font-size:14px;
+color:#444;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-top:10px;
+}
+
+.grid img{
+cursor:pointer;
+border-radius:14px;
+transition:0.25s ease;
+border:2px solid transparent;
+}
+
+.grid img:hover{
+transform:scale(1.03);
+}
+
+.cloth.active{
+border:2px solid #111;
+transform:scale(1.05);
+box-shadow:0 10px 20px rgba(0,0,0,0.15);
 }
