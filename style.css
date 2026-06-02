@@ -1,32 +1,55 @@
 body{
 margin:0;
-font-family:Arial;
-background: radial-gradient(circle at top,#1a1a2e,#0b0b12);
-color:white;
-text-align:center;
+font-family:Arial, sans-serif;
+background:#f7f7f7;
+color:#111;
 }
 
 header{
+text-align:center;
 padding:25px;
-background:rgba(255,255,255,0.05);
+background:white;
+box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 header h1{
-color:#f5c542;
 margin:0;
+font-size:24px;
+color:#111;
+}
+
+header p{
+color:#666;
+margin-top:5px;
 }
 
 .container{
-padding:20px;
 max-width:500px;
 margin:auto;
+padding:15px;
 }
 
 .card{
-background:rgba(255,255,255,0.06);
-padding:20px;
-border-radius:20px;
-backdrop-filter:blur(10px);
+background:white;
+padding:18px;
+margin-top:15px;
+border-radius:15px;
+box-shadow:0 5px 20px rgba(0,0,0,0.06);
+}
+
+input{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
+margin-top:10px;
+}
+
+#preview{
+width:100%;
+margin-top:12px;
+border-radius:12px;
+display:none;
 }
 
 .grid{
@@ -38,44 +61,36 @@ margin-top:10px;
 
 .cloth{
 width:100%;
-border-radius:10px;
+border-radius:12px;
 cursor:pointer;
+border:2px solid transparent;
 transition:0.2s;
 }
 
-.cloth:active{
-transform:scale(0.95);
-}
-
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:10px;
+.cloth:hover{
+border:2px solid black;
+transform:scale(1.02);
 }
 
 button{
 width:100%;
-margin-top:15px;
 padding:14px;
 border:none;
 border-radius:12px;
-background:#f5c542;
+background:black;
+color:white;
 font-weight:bold;
 cursor:pointer;
 }
 
-#preview{
-width:100%;
-margin-top:10px;
-border-radius:10px;
-display:none;
+button:active{
+transform:scale(0.98);
 }
 
 #result{
 margin-top:15px;
 padding:12px;
-background:rgba(0,0,0,0.3);
+background:#f1f1f1;
 border-radius:12px;
+text-align:center;
 }
