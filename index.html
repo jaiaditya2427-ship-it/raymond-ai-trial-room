@@ -3,29 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Raymond AI Trial Room</title>
+
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
 <header>
 <h2>Raymond AI Virtual Trial Room</h2>
-<p>Sector 9, Panchkula Showroom Experience</p>
+<p>Camera + Try On System</p>
 </header>
 
 <div class="container">
 
-<!-- CAMERA -->
 <div class="card">
 
-<h3>📸 Live Camera</h3>
+<h3>📸 Camera</h3>
 
 <video id="video" autoplay playsinline></video>
 
 <button onclick="startCamera()">Start Camera</button>
-<button onclick="switchCamera()">Switch Front / Back</button>
-<button onclick="capture()">Capture Image</button>
+<button onclick="switchCamera()">Switch Camera</button>
+<button onclick="capture()">Capture</button>
 
 <canvas id="canvas" style="display:none;"></canvas>
 
@@ -33,10 +36,9 @@
 
 </div>
 
-<!-- CLOTH SELECT -->
 <div class="card">
 
-<h3>👕 Select Outfit</h3>
+<h3>👕 Select Cloth</h3>
 
 <div class="grid">
 <img src="shirt1.jpg" onclick="selectCloth(this.src)">
@@ -47,12 +49,11 @@
 
 </div>
 
-<!-- RESULT -->
 <div class="card">
 
 <button onclick="generateTryOn()">Generate AI Try-On</button>
 
-<div id="result">Capture photo + select cloth</div>
+<div id="result">Ready</div>
 
 </div>
 
