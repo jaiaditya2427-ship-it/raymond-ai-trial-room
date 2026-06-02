@@ -18,6 +18,31 @@ selectedOutfit = outfit;
 
 // AI generate (backend call)
 async function generateTryOn(){
+  async function fetchLiveUpdate(){
+
+try{
+
+const res = await fetch("https://api.ideainfoline.com/update");
+const data = await res.json();
+
+document.getElementById("result").innerHTML = `
+<div style="padding:10px;background:rgba(255,215,0,0.1);border-radius:10px;">
+🔔 <b>Live Update</b><br><br>
+${data.message}
+</div>
+`;
+
+}catch(err){
+console.log("Live update error", err);
+}
+
+}
+
+// run every 5 seconds
+setInterval(fetchLiveUpdate, 5000);
+
+// run immediately once
+fetchLiveUpdate();
 
 const imageInput = document.getElementById("imageInput");
 const result = document.getElementById("result");
