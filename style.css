@@ -1,42 +1,15 @@
 body{
 margin:0;
-font-family:-apple-system, BlinkMacSystemFont;
-background:#0b0b0f;
+font-family:-apple-system;
+background:black;
 color:white;
 overflow:hidden;
 }
 
-/* TOP STEP BAR */
-.topbar{
-display:flex;
-justify-content:space-around;
-padding:12px;
-background:rgba(255,255,255,0.06);
-backdrop-filter:blur(20px);
-}
-
-.step{
-font-size:12px;
-opacity:0.4;
-transition:0.3s;
-}
-
-.step.active{
-opacity:1;
-transform:scale(1.1);
-}
-
-/* APP LAYOUT */
-.app{
-display:flex;
-flex-direction:column;
-height:100vh;
-}
-
-/* CAMERA */
-.cameraStage{
-flex:1;
+.container{
 position:relative;
+width:100%;
+height:100vh;
 }
 
 video{
@@ -45,62 +18,48 @@ height:100%;
 object-fit:cover;
 }
 
-/* CONTROLS */
-.controls{
+.overlay{
 position:absolute;
-bottom:20px;
+bottom:0;
 width:100%;
-display:flex;
-justify-content:space-around;
+padding:20px;
+background:linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+text-align:center;
 }
 
-button{
-padding:12px 18px;
-border:none;
-border-radius:30px;
-background:rgba(255,255,255,0.15);
-color:white;
-backdrop-filter:blur(10px);
-}
-
-/* PANEL */
-.panel{
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(25px);
-padding:18px;
-border-top-left-radius:20px;
-border-top-right-radius:20px;
-min-height:180px;
-}
-
-/* UPLOAD */
-.uploadBox input{
-width:100%;
-margin-top:10px;
-}
-
-/* PREVIEW */
 .preview{
 display:flex;
 gap:10px;
+justify-content:center;
 }
 
 .preview img{
-width:50%;
+width:45%;
 border-radius:12px;
 }
 
-.resultImg{
+.result{
 width:100%;
-border-radius:14px;
+border-radius:12px;
 }
 
-/* ANIMATION */
-.fade{
-animation:fade 0.3s ease;
+.topbar{
+position:absolute;
+top:10px;
+width:100%;
+display:flex;
+justify-content:center;
+gap:6px;
+z-index:10;
 }
 
-@keyframes fade{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;transform:translateY(0);}
+.dot{
+width:6px;
+height:6px;
+border-radius:50%;
+background:#555;
+}
+
+.dot.active{
+background:white;
 }
