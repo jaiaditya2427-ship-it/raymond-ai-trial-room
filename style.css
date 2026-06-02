@@ -207,6 +207,7 @@ transition:.3s;
 
 .dot.active{
 
+  
 width:24px;
 
 border-radius:999px;
@@ -339,4 +340,35 @@ flex-direction:column;
   opacity: 1;
   transform: scale(1);
   transition: all 0.25s ease;
+}
+.shutter-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.15s ease;
+}
+
+.shutter-flash.active {
+  opacity: 0.8;
+}
+
+.ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  transform: scale(0);
+  animation: rippleAnim 0.4s ease-out;
+  pointer-events: none;
+}
+
+@keyframes rippleAnim {
+  to {
+    transform: scale(8);
+    opacity: 0;
+  }
 }
