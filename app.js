@@ -1,42 +1,30 @@
-let stream = null;
+let stream;
 let facingMode = "user";
 
-let mode = "customer";
+let state = 1;
 
 let customerImage = "";
 let clothImage = "";
 
 /* ======================
-   START CAMERA (ONLY ONCE)
+   CAMERA INIT (ONLY ONCE)
 ====================== */
 
-async function startCamera(){
+async function initCamera(){
 
-try{
-
-if(stream){
-console.log("Camera already running");
-return;
-}
+if(stream) return;
 
 stream = await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode: facingMode
-},
+video:{facingMode},
 audio:false
 });
 
 document.getElementById("video").srcObject = stream;
 
-}catch(err){
-console.log(err);
-alert("Camera error. Open in HTTPS browser and allow permission.");
-}
-
 }
 
 /* ======================
-   SWITCH CAMERA (FRONT/BACK)
+   SWITCH CAMERA
 ====================== */
 
 function switchCamera(){
@@ -48,84 +36,162 @@ stream.getTracks().forEach(t=>t.stop());
 stream = null;
 }
 
-startCamera();
+initCamera();
 
 }
 
 /* ======================
-   SET MODE (NO CAMERA RESTART)
-====================== */
-
-function setMode(newMode){
-
-mode = newMode;
-
-document.getElementById("btnCustomer").style.background =
-(mode === "customer") ? "#000" : "#333";
-
-document.getElementById("btnCloth").style.background =
-(mode === "cloth") ? "#000" : "#333";
-
-}
-
-/* ======================
-   CAPTURE FRAME (OPTIMIZED)
+   CAPTURE IMAGE
 ====================== */
 
 function capture(){
 
 const video = document.getElementById("video");
-
 const canvas = document.createElement("canvas");
 
-// smaller resolution = faster + smoother
-canvas.width = video.videoWidth * 0.6;
-canvas.height = video.videoHeight * 0.6;
+canvas.width = video.videoWidth * 0.7;
+canvas.height = video.videoHeight * 0.7;
 
-const ctx = canvas.getContext("2d");
-ctx.drawImage(video,0,0,canvas.width,canvas.height);
+canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
 
-// compressed output (FAST)
-const image = canvas.toDataURL("image/jpeg",0.7);
+let img = canvas.toDataURL("image/jpeg",0.7);
 
-if(mode === "customer"){
-customerImage = image;
-document.getElementById("customerPreview").src = image;
+if(state === 1){
+customerImage = img;
+next(2);
 }
 
-if(mode === "cloth"){
-clothImage = image;
-document.getElementById("clothPreview").src = image;
+else if(state === 2){
+clothImage = img;
+next(3);
 }
 
 }
 
 /* ======================
-   AI GENERATE
+   UPLOAD CUSTOMER IMAGE
+====================== */
+
+function uploadCustomer(event){
+
+const file = event.target.files[0];
+const reader = new FileReader();
+
+reader.onload = function(e){
+customerImage = e.target.result;
+next(2);
+};
+
+reader.readAsDataURL(file);
+}
+
+/* ======================
+   UPLOAD CLOTH IMAGE
+====================== */
+
+function uploadCloth(event){
+
+const file = event.target.files[0];
+const reader = new FileReader();
+
+reader.onload = function(e){
+clothImage = e.target.result;
+next(3);
+};
+
+reader.readAsDataURL(file);
+}
+
+/* ======================
+   STATE NAVIGATION
+====================== */
+
+function next(n){
+
+state = n;
+
+document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+document.getElementById("s"+n).classList.add("active");
+
+render();
+
+}
+
+/* ======================
+   UI ENGINE
+====================== */
+
+function render(){
+
+const panel = document.getElementById("panelContent");
+
+panel.className = "fade";
+
+if(state === 1){
+
+panel.innerHTML = `
+<h2>Capture or Upload Customer</h2>
+
+<div class="uploadBox">
+<input type="file" accept="image/*" onchange="uploadCustomer(event)">
+</div>
+
+<p>Use camera or upload image</p>
+`;
+
+}
+
+if(state === 2){
+
+panel.innerHTML = `
+<h2>Capture or Upload Cloth</h2>
+
+<div class="uploadBox">
+<input type="file" accept="image/*" onchange="uploadCloth(event)">
+</div>
+
+<p>Take photo or upload outfit</p>
+`;
+
+}
+
+if(state === 3){
+
+panel.innerHTML = `
+<h2>Review</h2>
+
+<div class="preview">
+<img src="${customerImage}">
+<img src="${clothImage}">
+</div>
+
+<button onclick="next(4)">Generate AI Try-On</button>
+`;
+
+}
+
+if(state === 4){
+
+panel.innerHTML = `
+<h2>Result</h2>
+<div id="result">Processing...</div>
+`;
+
+generate();
+
+}
+
+}
+
+/* ======================
+   AI CALL
 ====================== */
 
 async function generate(){
 
-if(!customerImage){
-alert("Capture customer first");
-return;
-}
-
-if(!clothImage){
-alert("Capture cloth first");
-return;
-}
-
-document.getElementById("result").innerHTML =
-"Processing AI try-on...";
-
-try{
-
 const res = await fetch("https://api.ideainfoline.com/tryon",{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
+headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 personImage: customerImage,
 clothImage: clothImage
@@ -135,15 +201,14 @@ clothImage: clothImage
 const data = await res.json();
 
 document.getElementById("result").innerHTML =
-`<img src="${data.result}" style="width:100%;border-radius:14px;">`;
-
-}catch(err){
-
-console.log(err);
-
-document.getElementById("result").innerHTML =
-"AI failed. Try again.";
+`<img src="${data.result}" class="resultImg">`;
 
 }
 
-}
+/* ======================
+   START APP
+====================== */
+
+initCamera();
+render();
+next(1);
