@@ -1,38 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI Try-On Studio</title>
+
 <link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
+<div class="background-blur"></div>
+
+
 <div class="topbar">
-<div class="dot active" id="d1"></div>
-<div class="dot" id="d2"></div>
-<div class="dot" id="d3"></div>
-<div class="dot" id="d4"></div>
+    <div class="dot active" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+    <div class="dot" id="d4"></div>
 </div>
 
 <div class="container">
 
-<video id="video" autoplay playsinline></video>
+    <video
+        id="video"
+        autoplay
+        playsinline
+        muted>
 
-<div class="overlay" id="overlay">
+    </video>
 
-<h2 id="title">Customer Capture</h2>
-<p id="subtitle">Tap to capture • Upload option below</p>
+    <div class="overlay" id="overlay">
 
-<div class="actions">
+        <div class="glass-card">
 
-<input type="file" accept="image/*" onchange="uploadCustomer(event)">
-<button onclick="capture()">Capture</button>
+            <h1 id="title">
+                Customer Capture
+            </h1>
 
-</div>
+            <p id="subtitle">
+                Capture customer image or upload photo
 
-</div>
+            </p>
+
+            <div class="actions">
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    id="fileInput"
+                    hidden>
+
+                <button
+                    class="btn-primary"
+                    onclick="capture()">
+                    Capture
+                </button>
+
+                <button
+                    class="btn-secondary"
+                    onclick="openUpload()">
+                    Upload
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
 
 </div>
 
