@@ -3,69 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Trial Studio</title>
+<title>AI Luxury Trial Studio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
-<h2>AI Virtual Trial Studio</h2>
-</header>
+<div class="topbar">
+<div class="step active" id="s1">Customer</div>
+<div class="step" id="s2">Cloth</div>
+<div class="step" id="s3">Review</div>
+<div class="step" id="s4">Result</div>
+</div>
 
-<div class="container">
+<div class="app">
 
-<!-- CAMERA -->
-<div class="card">
-
-<h3>📸 Live Camera (Always ON)</h3>
+<!-- CAMERA AREA -->
+<div class="cameraStage">
 
 <video id="video" autoplay playsinline></video>
 
-<div class="row">
+<div class="controls">
 
-<button onclick="startCamera()">Start</button>
-<button onclick="switchCamera()">Front/Back</button>
-
-</div>
+<button onclick="switchCamera()">Flip</button>
+<button onclick="capture()">Capture</button>
 
 </div>
 
-<!-- CAPTURE CONTROLS -->
-<div class="card">
-
-<h3>Capture Mode</h3>
-
-<div class="row">
-
-<button onclick="setMode('customer')" id="btnCustomer">👤 Customer</button>
-<button onclick="setMode('cloth')" id="btnCloth">👕 Cloth</button>
-
 </div>
 
-<button onclick="capture()">📸 Capture Current Frame</button>
+<!-- PANEL -->
+<div class="panel">
 
-</div>
-
-<!-- PREVIEW -->
-<div class="card">
-
-<h3>Captured</h3>
-
-<p>Customer</p>
-<img id="customerPreview">
-
-<p>Cloth</p>
-<img id="clothPreview">
-
-</div>
-
-<!-- RESULT -->
-<div class="card">
-
-<button onclick="generate()">Generate AI Try-On</button>
-
-<div id="result">Ready</div>
+<div id="panelContent"></div>
 
 </div>
 
