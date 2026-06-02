@@ -4,13 +4,15 @@ let state = 1;
 let customerImage = "";
 let clothImage = "";
 
-/* ---------------- CAMERA START ---------------- */
+/* ---------------- CAMERA START (BACK CAMERA FIXED) ---------------- */
 
 async function startCamera(){
 try{
 
 stream = await navigator.mediaDevices.getUserMedia({
-video:{ facingMode:"user" },
+video:{
+facingMode: { ideal: "environment" }   // ✅ BACK CAMERA FIX
+},
 audio:false
 });
 
@@ -132,7 +134,7 @@ document.getElementById("overlay").innerHTML =
 }
 }
 
-/* ---------------- AI CALL (SAFE) ---------------- */
+/* ---------------- AI CALL ---------------- */
 
 async function generateAI(){
 
