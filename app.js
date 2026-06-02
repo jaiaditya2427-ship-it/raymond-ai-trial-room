@@ -1,45 +1,71 @@
-let selectedCloth = "";
+let customerImage = "";
+let clothImage = "";
 
-function selectCloth(src){
-selectedCloth = src;
-alert("Outfit selected ✔");
-}
+/* -----------------------------
+START CAMERA (BOTH)
+----------------------------- */
+navigator.mediaDevices.getUserMedia({ video:true })
+.then(stream => {
 
-// preview image
-document.getElementById("personImage").addEventListener("change", function(){
+document.getElementById("customerCam").srcObject = stream;
+document.getElementById("clothCam").srcObject = stream;
 
-const file = this.files[0];
-const preview = document.getElementById("preview");
-
-if(file){
-preview.src = URL.createObjectURL(file);
-preview.style.display = "block";
-}
-
+})
+.catch(err=>{
+alert("Camera access denied");
 });
 
-// MAIN TRY-ON FUNCTION
+/* -----------------------------
+CAPTURE CUSTOMER
+----------------------------- */
+function captureCustomer(){
+
+const video = document.getElementById("customerCam");
+const canvas = document.getElementById("customerCanvas");
+
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+canvas.getContext("2d").drawImage(video,0,0);
+
+customerImage = canvas.toDataURL("image/png");
+
+document.getElementById("customerPreview").src = customerImage;
+document.getElementById("customerPreview").style.display = "block";
+
+}
+
+/* -----------------------------
+CAPTURE CLOTH
+----------------------------- */
+function captureCloth(){
+
+const video = document.getElementById("clothCam");
+const canvas = document.getElementById("clothCanvas");
+
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+canvas.getContext("2d").drawImage(video,0,0);
+
+clothImage = canvas.toDataURL("image/png");
+
+document.getElementById("clothPreview").src = clothImage;
+document.getElementById("clothPreview").style.display = "block";
+
+}
+
+/* -----------------------------
+GENERATE TRY-ON (BACKEND CALL)
+----------------------------- */
 async function generateTryOn(){
 
-const file = document.getElementById("personImage").files[0];
-
-if(!file){
-alert("Please upload customer photo");
+if(!customerImage || !clothImage){
+alert("Please capture both images");
 return;
 }
 
-if(!selectedCloth){
-alert("Please select outfit");
-return;
-}
-
-document.getElementById("result").innerHTML = "Generating AI Look... ✨";
-
-const reader = new FileReader();
-
-reader.onload = async function(){
-
-try{
+document.getElementById("result").innerHTML = "Generating AI Try-On... ✨";
 
 const res = await fetch("https://api.ideainfoline.com/tryon", {
 method:"POST",
@@ -47,23 +73,16 @@ headers:{
 "Content-Type":"application/json"
 },
 body: JSON.stringify({
-personImage: reader.result,
-clothImage: selectedCloth
+personImage: customerImage,
+clothImage: clothImage
 })
 });
 
 const data = await res.json();
 
 document.getElementById("result").innerHTML = `
-<h3>AI Try-On Result</h3>
-<img src="${data.result}" style="width:100%;border-radius:12px;">
+<h3>AI Result</h3>
+<img src="${data.result}" style="display:block;">
 `;
 
-}catch(err){
-document.getElementById("result").innerHTML = "Server error";
-}
-
-};
-
-reader.readAsDataURL(file);
 }
