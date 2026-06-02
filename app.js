@@ -1,5 +1,3 @@
-/* ---------------- STATE ---------------- */
-
 let stream;
 let state = 1;
 
@@ -8,7 +6,70 @@ let clothImage = "";
 
 let captureEnabled = true;
 
-/* ---------------- CAMERA ---------------- */
+/* =========================
+   A) SHUTTER SOUND
+========================= */
+
+const shutterSound = new Audio(
+"https://www.myinstants.com/media/sounds/camera-shutter-click.mp3"
+);
+
+function playShutter(){
+try{
+shutterSound.currentTime = 0;
+shutterSound.play();
+}catch(e){}
+}
+
+/* =========================
+   B) HAPTIC VIBRATION
+========================= */
+
+function vibrate(){
+if(navigator.vibrate){
+navigator.vibrate(20);
+}
+}
+
+/* =========================
+   C) FLASH EFFECT
+========================= */
+
+function cameraFlash(){
+const flash = document.getElementById("flash");
+
+if(!flash) return;
+
+flash.classList.add("active");
+
+setTimeout(()=>{
+flash.classList.remove("active");
+},150);
+}
+
+/* =========================
+   D) RIPPLE EFFECT
+========================= */
+
+document.addEventListener("click", function(e){
+
+const ripple = document.createElement("div");
+ripple.className = "ripple";
+
+ripple.style.left = e.clientX + "px";
+ripple.style.top = e.clientY + "px";
+
+document.body.appendChild(ripple);
+
+setTimeout(()=>{
+ripple.remove();
+},400);
+
+});
+
+/* =========================
+   CAMERA START
+========================= */
 
 async function startCamera(){
 
@@ -24,40 +85,23 @@ audio:false
 document.getElementById("video").srcObject = stream;
 
 }catch(err){
-alert("Camera not allowed or not supported. Use HTTPS (Vercel)");
+alert("Camera not allowed or not supported (use HTTPS)");
 console.log(err);
 }
 
 }
 
-/* ---------------- TRANSITION SYSTEM (NEW) ---------------- */
-
-function transitionUI(callback){
-
-const overlay = document.getElementById("overlay");
-
-overlay.classList.add("fade-out");
-
-setTimeout(()=>{
-
-callback();
-
-overlay.classList.remove("fade-out");
-overlay.classList.add("fade-in");
-
-setTimeout(()=>{
-overlay.classList.remove("fade-in");
-},250);
-
-},180);
-
-}
-
-/* ---------------- CAPTURE ---------------- */
+/* =========================
+   CAPTURE IMAGE
+========================= */
 
 function capture(){
 
 if(!captureEnabled) return;
+
+playShutter();
+vibrate();
+cameraFlash();
 
 const video = document.getElementById("video");
 
@@ -90,7 +134,9 @@ return;
 
 }
 
-/* ---------------- UPLOAD ---------------- */
+/* =========================
+   UPLOAD
+========================= */
 
 function openUpload(){
 document.getElementById("fileInput").click();
@@ -121,11 +167,11 @@ reader.readAsDataURL(file);
 
 });
 
-/* ---------------- UI FLOW (UPDATED WITH TRANSITION) ---------------- */
+/* =========================
+   E) UI FLOW (STATE SYSTEM)
+========================= */
 
 function updateUI(){
-
-transitionUI(()=>{
 
 const title = document.getElementById("title");
 const subtitle = document.getElementById("subtitle");
@@ -135,14 +181,12 @@ document.getElementById("d"+state).classList.add("active");
 
 if(state === 1){
 captureEnabled = true;
-
 title.innerText = "Customer Capture";
 subtitle.innerText = "Capture or upload customer image";
 }
 
 if(state === 2){
 captureEnabled = true;
-
 title.innerText = "Cloth Capture";
 subtitle.innerText = "Capture or upload cloth image";
 }
@@ -167,26 +211,27 @@ document.getElementById("overlay").innerHTML = `
 }
 
 if(state === 4){
-
 document.getElementById("overlay").innerHTML = `
 <div class="glass-card">
 <div class="loader"></div>
 <p>Processing AI...</p>
 </div>
 `;
+}
 
 }
 
-});
-
-}
-
-/* ---------------- AI ---------------- */
+/* =========================
+   AI GENERATION (STEP 3)
+========================= */
 
 async function generateAI(){
 
 state = 4;
 updateUI();
+
+/* SHOW AI SCREEN */
+document.getElementById("aiScreen")?.classList.remove("hidden");
 
 try{
 
@@ -201,6 +246,9 @@ clothImage: clothImage
 
 const data = await res.json();
 
+/* HIDE AI SCREEN */
+document.getElementById("aiScreen")?.classList.add("hidden");
+
 document.getElementById("overlay").innerHTML = `
 <div class="glass-card">
 
@@ -213,14 +261,20 @@ document.getElementById("overlay").innerHTML = `
 
 }catch(err){
 
+document.getElementById("aiScreen")?.classList.add("hidden");
+
 document.getElementById("overlay").innerHTML =
 "<div class='error-card'>AI Failed</div>";
 
-}
+console.log(err);
 
 }
 
-/* ---------------- INIT ---------------- */
+}
+
+/* =========================
+   INIT
+========================= */
 
 startCamera();
 updateUI();
