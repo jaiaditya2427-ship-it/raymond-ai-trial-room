@@ -3,41 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Luxury Trial Studio</title>
+<title>AI Try-On Studio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- TOP PROGRESS -->
 <div class="topbar">
-<div class="step" id="s1">Customer</div>
-<div class="step" id="s2">Cloth</div>
-<div class="step" id="s3">Review</div>
-<div class="step" id="s4">Result</div>
+<div class="dot active" id="d1"></div>
+<div class="dot" id="d2"></div>
+<div class="dot" id="d3"></div>
+<div class="dot" id="d4"></div>
 </div>
 
-<!-- MAIN APP -->
-<div class="app">
-
-<!-- CAMERA STAGE (NEVER CHANGES) -->
-<div class="cameraStage">
+<div class="container">
 
 <video id="video" autoplay playsinline></video>
 
-<div class="glassControls">
+<div class="overlay" id="overlay">
 
-<button onclick="switchCamera()">Flip</button>
+<h2 id="title">Customer Capture</h2>
+<p id="subtitle">Tap to capture • Upload option below</p>
+
+<div class="actions">
+
+<input type="file" accept="image/*" onchange="uploadCustomer(event)">
 <button onclick="capture()">Capture</button>
 
 </div>
-
-</div>
-
-<!-- BOTTOM PANEL (CHANGES ONLY CONTENT) -->
-<div class="panel">
-
-<div id="panelContent"></div>
 
 </div>
 
