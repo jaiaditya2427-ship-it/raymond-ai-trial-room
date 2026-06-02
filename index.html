@@ -1,97 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raymond AI Studio</title>
-<link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-<header>
-<h1>Raymond AI Studio</h1>
-<p>Luxury Virtual Try-On Experience</p>
-  <div style="text-align:center;font-size:12px;opacity:0.7;">
-LIVE • Raymond AI System Active
-</div>
-</header>
-
-<div class="tabs">
-
-<button class="tab active" onclick="switchTab('tryon')">Try On</button>
-<button class="tab" onclick="switchTab('gallery')">Collection</button>
-<button class="tab" onclick="switchTab('book')">Book</button>
-
-</div>
-
-<!-- TRY ON -->
-<div id="tryon" class="section active">
-
 <div class="card">
 
-<div class="upload-box">
-<input type="file" id="imageInput">
-<p>Upload Your Photo</p>
-</div>
+<h3>1. Upload Customer Photo</h3>
+<input type="file" id="personImage">
 
-<img id="preview">
-
-<h3>Select Outfit</h3>
-
+<h3>2. Select Cloth</h3>
 <div class="grid">
 
-<div class="item" onclick="selectOutfit('White Shirt')">White Shirt</div>
-<div class="item" onclick="selectOutfit('Black Suit')">Black Suit</div>
-<div class="item" onclick="selectOutfit('Blue Blazer')">Blue Blazer</div>
-<div class="item" onclick="selectOutfit('Wedding Sherwani')">Sherwani</div>
-<div class="item" onclick="selectOutfit('Party Wear')">Party Wear</div>
+<img src="shirt1.jpg" onclick="selectCloth(this.src)" class="cloth">
+<img src="shirt2.jpg" onclick="selectCloth(this.src)" class="cloth">
+<img src="suit1.jpg" onclick="selectCloth(this.src)" class="cloth">
+<img src="suit2.jpg" onclick="selectCloth(this.src)" class="cloth">
 
 </div>
 
-<button onclick="generateTryOn()">Generate AI Look</button>
+<h3>3. Preview</h3>
+<img id="preview" style="width:100%;display:none;border-radius:10px;">
 
-<div id="result">Your AI look will appear here</div>
+<button onclick="generateTryOn()">Generate Try-On</button>
 
-</div>
-
-</div>
-
-<!-- COLLECTION -->
-<div id="gallery" class="section">
-
-<div class="card">
-<h3>Raymond Premium Collection</h3>
-
-<div class="grid">
-<div class="item">Formal Suits</div>
-<div class="item">Wedding Wear</div>
-<div class="item">Blazers</div>
-<div class="item">Shirts</div>
-</div>
+<div id="result"></div>
 
 </div>
-
-</div>
-
-<!-- BOOK -->
-<div id="book" class="section">
-
-<div class="card">
-
-<h3>Book Appointment</h3>
-
-<input placeholder="Your Name">
-<input placeholder="Phone Number">
-<input placeholder="Preferred Date">
-
-<button>Book Now</button>
-
-</div>
-
-</div>
-
-<script src="app.js"></script>
-
-</body>
-</html>
