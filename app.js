@@ -1,11 +1,13 @@
 let stream = null;
-let facingMode = "user";
 
-let capturedImage = "";
-let selectedCloth = "";
+let facingMode = "user";
+let mode = "customer"; // customer or cloth
+
+let customerImage = "";
+let clothImage = "";
 
 /* ======================
-   CAMERA START
+   START CAMERA
 ====================== */
 
 async function startCamera(){
@@ -24,14 +26,14 @@ audio:false
 document.getElementById("video").srcObject = stream;
 
 }catch(err){
+alert("Camera error. Use HTTPS + allow permission.");
 console.log(err);
-alert("Camera not available. Use HTTPS + allow permission.");
 }
 
 }
 
 /* ======================
-   SWITCH CAMERA
+   SWITCH FRONT / BACK
 ====================== */
 
 function switchCamera(){
@@ -42,7 +44,19 @@ startCamera();
 }
 
 /* ======================
-   CAPTURE CUSTOMER
+   SWITCH MODE
+====================== */
+
+function switchMode(){
+
+mode = (mode === "customer") ? "cloth" : "customer";
+
+alert("Mode: " + mode.toUpperCase());
+
+}
+
+/* ======================
+   CAPTURE IMAGE (BOTH TYPES)
 ====================== */
 
 function capture(){
@@ -55,25 +69,17 @@ canvas.height = video.videoHeight;
 
 canvas.getContext("2d").drawImage(video,0,0);
 
-capturedImage = canvas.toDataURL("image/png");
+let image = canvas.toDataURL("image/png");
 
-document.getElementById("preview").src = capturedImage;
-
+if(mode === "customer"){
+customerImage = image;
+document.getElementById("customerPreview").src = image;
 }
 
-/* ======================
-   CLOTH SELECT (LIVE PREMIUM CLICK)
-====================== */
-
-function selectCloth(el){
-
-document.querySelectorAll(".cloth").forEach(img=>{
-img.classList.remove("active");
-});
-
-el.classList.add("active");
-
-selectedCloth = el.src;
+if(mode === "cloth"){
+clothImage = image;
+document.getElementById("clothPreview").src = image;
+}
 
 }
 
@@ -83,18 +89,18 @@ selectedCloth = el.src;
 
 async function generateTryOn(){
 
-if(!capturedImage){
-alert("Please capture customer image");
+if(!customerImage){
+alert("Capture CUSTOMER image first");
 return;
 }
 
-if(!selectedCloth){
-alert("Please select outfit");
+if(!clothImage){
+alert("Capture CLOTH image first");
 return;
 }
 
 document.getElementById("result").innerHTML =
-"Generating luxury AI try-on...";
+"Generating AI Try-On...";
 
 try{
 
@@ -104,8 +110,8 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-personImage: capturedImage,
-clothImage: selectedCloth
+personImage: customerImage,
+clothImage: clothImage
 })
 });
 
@@ -119,7 +125,7 @@ document.getElementById("result").innerHTML =
 console.log(err);
 
 document.getElementById("result").innerHTML =
-"AI failed. Try again.";
+"AI failed";
 
 }
 
