@@ -1,97 +1,125 @@
-let stream;
-let facingMode = "user";
+let stream = null;
 
-let capturedImage = "";
-let selectedCloth = "";
+const video = () => document.getElementById("video");
+const canvas = () => document.getElementById("canvas");
 
-/* ======================
-   START CAMERA
-====================== */
+let facingMode = "user"; // front default
 
-async function startCamera(){
+/* =========================
+   START CAMERA (UNIVERSAL SAFE)
+========================= */
 
-try{
+async function startCamera() {
 
-if(stream){
+try {
+
+// stop old stream safely
+if (stream) {
 stream.getTracks().forEach(track => track.stop());
+stream = null;
 }
 
-stream = await navigator.mediaDevices.getUserMedia({
-video:{ facingMode: facingMode }
-});
+const constraints = {
+video: {
+facingMode: facingMode
+},
+audio: false
+};
 
-document.getElementById("video").srcObject = stream;
+stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+const v = video();
+
+v.srcObject = stream;
+v.setAttribute("playsinline", true);
+v.setAttribute("webkit-playsinline", true);
+
+await v.play();
 
 }catch(err){
-alert("Camera blocked. Please allow permission in Safari settings.");
-console.log(err);
-}
+
+console.log("Camera error:", err);
+
+alert(
+"Camera blocked.\n\nFix checklist:\n" +
+"1. Open in HTTPS site (Vercel / Domain)\n" +
+"2. Allow camera permission\n" +
+"3. Use Chrome or Safari\n" +
+"4. Reset camera permissions if denied"
+);
 
 }
 
-/* ======================
+}
+
+/* =========================
    SWITCH CAMERA
-====================== */
+========================= */
 
-function switchCamera(){
+async function switchCamera() {
 
 facingMode = (facingMode === "user") ? "environment" : "user";
-startCamera();
+await startCamera();
 
 }
 
-/* ======================
+/* =========================
    CAPTURE IMAGE
-====================== */
+========================= */
 
-function capture(){
+let capturedImage = "";
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+function capture() {
 
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
+const v = video();
+const c = canvas();
 
-canvas.getContext("2d").drawImage(video,0,0);
+c.width = v.videoWidth;
+c.height = v.videoHeight;
 
-capturedImage = canvas.toDataURL("image/png");
+c.getContext("2d").drawImage(v, 0, 0);
+
+capturedImage = c.toDataURL("image/png");
 
 document.getElementById("preview").src = capturedImage;
 
 }
 
-/* ======================
-   SELECT CLOTH
-====================== */
+/* =========================
+   CLOTH SELECT
+========================= */
 
-function selectCloth(src){
+let selectedCloth = "";
+
+function selectCloth(src) {
 selectedCloth = src;
 alert("Cloth selected ✔");
 }
 
-/* ======================
-   TRY ON (BACKEND READY)
-====================== */
+/* =========================
+   TRY ON API CALL
+========================= */
 
-async function generateTryOn(){
+async function generateTryOn() {
 
-if(!capturedImage){
+if (!capturedImage) {
 alert("Capture customer image first");
 return;
 }
 
-if(!selectedCloth){
+if (!selectedCloth) {
 alert("Select cloth first");
 return;
 }
 
-document.getElementById("result").innerHTML =
-"Generating AI Try-On...";
+document.getElementById("result").innerHTML = "Generating AI Try-On...";
+
+try {
 
 const res = await fetch("https://api.ideainfoline.com/tryon", {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
+method: "POST",
+headers: {
+"Content-Type": "application/json"
 },
 body: JSON.stringify({
 personImage: capturedImage,
@@ -103,7 +131,16 @@ const data = await res.json();
 
 document.getElementById("result").innerHTML = `
 <h3>Result</h3>
-<img src="${data.result}">
+<img src="${data.result}" style="width:100%;border-radius:12px;">
 `;
+
+}catch(err){
+
+console.log(err);
+
+document.getElementById("result").innerHTML =
+"Server error. Try again.";
+
+}
 
 }
