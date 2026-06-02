@@ -27,3 +27,21 @@ outfit +
 "...";
 
 });
+async function checkUpdates(){
+
+try{
+
+const res = await fetch("https://api.ideainfoline.com/update");
+const data = await res.json();
+
+document.getElementById("result").innerHTML =
+"🔔 " + data.message;
+
+}catch(err){
+console.log("Live update error");
+}
+
+}
+
+// run every 5 seconds
+setInterval(checkUpdates, 5000);
