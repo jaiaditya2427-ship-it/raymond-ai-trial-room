@@ -1,13 +1,13 @@
 let stream = null;
-
 let facingMode = "user";
-let mode = "customer"; // customer or cloth
+
+let mode = "customer";
 
 let customerImage = "";
 let clothImage = "";
 
 /* ======================
-   START CAMERA
+   START CAMERA (ONLY ONCE)
 ====================== */
 
 async function startCamera(){
@@ -15,61 +15,78 @@ async function startCamera(){
 try{
 
 if(stream){
-stream.getTracks().forEach(t=>t.stop());
+console.log("Camera already running");
+return;
 }
 
 stream = await navigator.mediaDevices.getUserMedia({
-video:{ facingMode: facingMode },
+video:{
+facingMode: facingMode
+},
 audio:false
 });
 
 document.getElementById("video").srcObject = stream;
 
 }catch(err){
-alert("Camera error. Use HTTPS + allow permission.");
 console.log(err);
+alert("Camera error. Open in HTTPS browser and allow permission.");
 }
 
 }
 
 /* ======================
-   SWITCH FRONT / BACK
+   SWITCH CAMERA (FRONT/BACK)
 ====================== */
 
 function switchCamera(){
 
 facingMode = (facingMode === "user") ? "environment" : "user";
+
+if(stream){
+stream.getTracks().forEach(t=>t.stop());
+stream = null;
+}
+
 startCamera();
 
 }
 
 /* ======================
-   SWITCH MODE
+   SET MODE (NO CAMERA RESTART)
 ====================== */
 
-function switchMode(){
+function setMode(newMode){
 
-mode = (mode === "customer") ? "cloth" : "customer";
+mode = newMode;
 
-alert("Mode: " + mode.toUpperCase());
+document.getElementById("btnCustomer").style.background =
+(mode === "customer") ? "#000" : "#333";
+
+document.getElementById("btnCloth").style.background =
+(mode === "cloth") ? "#000" : "#333";
 
 }
 
 /* ======================
-   CAPTURE IMAGE (BOTH TYPES)
+   CAPTURE FRAME (OPTIMIZED)
 ====================== */
 
 function capture(){
 
 const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
 
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
+const canvas = document.createElement("canvas");
 
-canvas.getContext("2d").drawImage(video,0,0);
+// smaller resolution = faster + smoother
+canvas.width = video.videoWidth * 0.6;
+canvas.height = video.videoHeight * 0.6;
 
-let image = canvas.toDataURL("image/png");
+const ctx = canvas.getContext("2d");
+ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+// compressed output (FAST)
+const image = canvas.toDataURL("image/jpeg",0.7);
 
 if(mode === "customer"){
 customerImage = image;
@@ -84,23 +101,23 @@ document.getElementById("clothPreview").src = image;
 }
 
 /* ======================
-   AI TRY-ON
+   AI GENERATE
 ====================== */
 
-async function generateTryOn(){
+async function generate(){
 
 if(!customerImage){
-alert("Capture CUSTOMER image first");
+alert("Capture customer first");
 return;
 }
 
 if(!clothImage){
-alert("Capture CLOTH image first");
+alert("Capture cloth first");
 return;
 }
 
 document.getElementById("result").innerHTML =
-"Generating AI Try-On...";
+"Processing AI try-on...";
 
 try{
 
@@ -125,7 +142,7 @@ document.getElementById("result").innerHTML =
 console.log(err);
 
 document.getElementById("result").innerHTML =
-"AI failed";
+"AI failed. Try again.";
 
 }
 
