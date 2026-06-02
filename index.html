@@ -3,25 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raymond AI Trial Room</title>
+<title>Raymond Virtual Trial Room</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-<h1>Raymond AI Studio</h1>
-<p>Virtual Fashion Try-On Experience</p>
+<h1>Raymond AI Trial Room</h1>
+<p>Luxury Virtual Try-On Experience</p>
 </header>
 
 <div class="container">
 
+<!-- CUSTOMER IMAGE -->
 <div class="card">
 
-<h3>Upload Customer Photo</h3>
-<input type="file" id="personImage">
+<h3>1. Customer Photo</h3>
+<input type="file" id="personImage" accept="image/*">
 
-<h3>Select Outfit</h3>
+<img id="preview">
+
+</div>
+
+<!-- CLOTH SELECTION -->
+<div class="card">
+
+<h3>2. Select Outfit</h3>
 
 <div class="grid">
 
@@ -32,11 +40,14 @@
 
 </div>
 
-<img id="preview" style="width:100%;display:none;border-radius:10px;margin-top:10px;">
+</div>
+
+<!-- ACTION -->
+<div class="card">
 
 <button onclick="generateTryOn()">Generate AI Try-On</button>
 
-<div id="result">Upload photo and select outfit</div>
+<div id="result">Upload photo + select outfit</div>
 
 </div>
 
