@@ -6,29 +6,28 @@
 
 <title>Raymond AI Trial Room</title>
 
-<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
 <header>
 <h2>Raymond AI Virtual Trial Room</h2>
-<p>Camera + Try On System</p>
+<p>Luxury Store Experience</p>
 </header>
 
 <div class="container">
 
+<!-- CUSTOMER CAMERA -->
 <div class="card">
 
-<h3>📸 Camera</h3>
+<h3>📸 Customer Live Camera</h3>
 
 <video id="video" autoplay playsinline></video>
 
 <button onclick="startCamera()">Start Camera</button>
 <button onclick="switchCamera()">Switch Camera</button>
-<button onclick="capture()">Capture</button>
+<button onclick="capture()">Capture Customer</button>
 
 <canvas id="canvas" style="display:none;"></canvas>
 
@@ -36,24 +35,28 @@
 
 </div>
 
+<!-- CLOTH SELECTION -->
 <div class="card">
 
-<h3>👕 Select Cloth</h3>
+<h3>👕 Select Outfit (Tap to choose)</h3>
 
 <div class="grid">
-<img src="shirt1.jpg" onclick="selectCloth(this.src)">
-<img src="shirt2.jpg" onclick="selectCloth(this.src)">
-<img src="suit1.jpg" onclick="selectCloth(this.src)">
-<img src="suit2.jpg" onclick="selectCloth(this.src)">
-</div>
+
+<img src="shirt1.jpg" class="cloth" onclick="selectCloth(this)">
+<img src="shirt2.jpg" class="cloth" onclick="selectCloth(this)">
+<img src="suit1.jpg" class="cloth" onclick="selectCloth(this)">
+<img src="pant1.jpg" class="cloth" onclick="selectCloth(this)">
 
 </div>
 
+</div>
+
+<!-- AI ACTION -->
 <div class="card">
 
 <button onclick="generateTryOn()">Generate AI Try-On</button>
 
-<div id="result">Ready</div>
+<div id="result">Ready for luxury experience</div>
 
 </div>
 
