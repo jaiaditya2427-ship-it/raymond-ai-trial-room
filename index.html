@@ -10,41 +10,40 @@
 <body>
 
 <header>
-<h1>Raymond AI Virtual Trial Room</h1>
-<p>Luxury Live Camera Experience</p>
+<h2>Raymond AI Virtual Trial Room</h2>
+<p>Sector 9, Panchkula Showroom Experience</p>
 </header>
 
 <div class="container">
 
-<!-- CUSTOMER CAMERA -->
+<!-- CAMERA -->
 <div class="card">
 
-<h3>📸 Customer Camera</h3>
+<h3>📸 Live Camera</h3>
 
-<video id="customerVideo" autoplay playsinline></video>
+<video id="video" autoplay playsinline></video>
 
-<button onclick="switchCustomerCam()">🔄 Switch Camera</button>
-<button onclick="captureCustomer()">📸 Capture Customer</button>
+<button onclick="startCamera()">Start Camera</button>
+<button onclick="switchCamera()">Switch Front / Back</button>
+<button onclick="capture()">Capture Image</button>
 
-<canvas id="customerCanvas" style="display:none;"></canvas>
+<canvas id="canvas" style="display:none;"></canvas>
 
-<img id="customerPreview">
+<img id="preview">
 
 </div>
 
-<!-- CLOTH CAMERA -->
+<!-- CLOTH SELECT -->
 <div class="card">
 
-<h3>👕 Cloth Camera</h3>
+<h3>👕 Select Outfit</h3>
 
-<video id="clothVideo" autoplay playsinline></video>
-
-<button onclick="switchClothCam()">🔄 Switch Camera</button>
-<button onclick="captureCloth()">📸 Capture Cloth</button>
-
-<canvas id="clothCanvas" style="display:none;"></canvas>
-
-<img id="clothPreview">
+<div class="grid">
+<img src="shirt1.jpg" onclick="selectCloth(this.src)">
+<img src="shirt2.jpg" onclick="selectCloth(this.src)">
+<img src="suit1.jpg" onclick="selectCloth(this.src)">
+<img src="suit2.jpg" onclick="selectCloth(this.src)">
+</div>
 
 </div>
 
@@ -53,7 +52,7 @@
 
 <button onclick="generateTryOn()">Generate AI Try-On</button>
 
-<div id="result">Capture both images</div>
+<div id="result">Capture photo + select cloth</div>
 
 </div>
 
