@@ -1,16 +1,72 @@
+/* ======================
+   STATE
+====================== */
+
 let stream;
 let facingMode = "user";
-
 let state = 1;
 
 let customerImage = "";
 let clothImage = "";
 
+let captureEnabled = true;
+let audioUnlocked = false;
+
 /* ======================
-   INIT CAMERA ONCE
+   AUDIO UNLOCK SYSTEM
+====================== */
+
+function unlockAudio(){
+if(audioUnlocked) return;
+
+const temp = new Audio("https://www.myinstants.com/media/sounds/mouse-click.mp3");
+
+temp.play().then(()=>{
+audioUnlocked = true;
+}).catch(()=>{});
+
+document.removeEventListener("click", unlockAudio);
+}
+
+document.addEventListener("click", unlockAudio);
+
+/* ======================
+   SOUND + VIBRATION
+====================== */
+
+const clickSound = new Audio("https://www.myinstants.com/media/sounds/mouse-click.mp3");
+
+function playClick(){
+if(!audioUnlocked) return;
+try{
+clickSound.currentTime = 0;
+clickSound.play();
+}catch(e){}
+}
+
+function vibrate(){
+if(navigator.vibrate){
+navigator.vibrate(15);
+}
+}
+
+function speak(text){
+if(!audioUnlocked) return;
+
+try{
+const msg = new SpeechSynthesisUtterance(text);
+msg.rate = 1;
+speechSynthesis.speak(msg);
+}catch(e){}
+}
+
+/* ======================
+   CAMERA INIT
 ====================== */
 
 async function initCamera(){
+
+try{
 
 stream = await navigator.mediaDevices.getUserMedia({
 video:{facingMode},
@@ -19,109 +75,125 @@ audio:false
 
 document.getElementById("video").srcObject = stream;
 
+}catch(err){
+alert("Camera blocked. Allow permission + use HTTPS (Vercel)");
 }
-
-/* ======================
-   SWITCH CAMERA
-====================== */
-
-function switchCamera(){
-
-facingMode = (facingMode === "user") ? "environment" : "user";
-
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-}
-
-initCamera();
 
 }
 
 /* ======================
-   CAPTURE IMAGE (SMART)
+   CAPTURE IMAGE
 ====================== */
 
 function capture(){
 
+if(!captureEnabled) return;
+
+playClick();
+vibrate();
+
 const video = document.getElementById("video");
 const canvas = document.createElement("canvas");
 
-canvas.width = video.videoWidth * 0.7;
-canvas.height = video.videoHeight * 0.7;
+canvas.width = video.videoWidth || 300;
+canvas.height = video.videoHeight || 300;
 
-canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
+canvas.getContext("2d").drawImage(video,0,0);
 
 let img = canvas.toDataURL("image/jpeg",0.7);
 
 if(state === 1){
 customerImage = img;
-nextState(2);
+speak("Customer captured");
+next();
 }
 
 else if(state === 2){
 clothImage = img;
-nextState(3);
+speak("Cloth captured");
+next();
 }
 
 }
 
 /* ======================
-   STATE ENGINE
+   UPLOAD CUSTOMER
 ====================== */
 
-function nextState(n){
+function uploadCustomer(event){
 
-state = n;
-renderUI();
-highlightSteps();
+const file = event.target.files[0];
+const reader = new FileReader();
 
+reader.onload = function(e){
+customerImage = e.target.result;
+next();
+};
+
+reader.readAsDataURL(file);
 }
 
 /* ======================
-   STEP UI HIGHLIGHT
+   UPLOAD CLOTH
 ====================== */
 
-function highlightSteps(){
+function uploadCloth(event){
 
-document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+const file = event.target.files[0];
+const reader = new FileReader();
 
-document.getElementById("s"+state).classList.add("active");
+reader.onload = function(e){
+clothImage = e.target.result;
+next();
+};
 
+reader.readAsDataURL(file);
 }
 
 /* ======================
-   UI RENDER ENGINE
+   STATE CONTROL
 ====================== */
 
-function renderUI(){
+function next(){
+if(state < 4) state++;
+render();
+}
 
-const panel = document.getElementById("panelContent");
+/* ======================
+   RENDER UI
+====================== */
 
-panel.classList.remove("fade");
-void panel.offsetWidth;
-panel.classList.add("fade");
+function render(){
+
+document.querySelectorAll(".dot").forEach(d=>d.classList.remove("active"));
+document.getElementById("d"+state).classList.add("active");
+
+const title = document.getElementById("title");
+const subtitle = document.getElementById("subtitle");
 
 if(state === 1){
 
-panel.innerHTML = `
-<h2>Capture Customer</h2>
-<p>Align face in frame and capture.</p>
-`;
+captureEnabled = true;
+
+title.innerText = "Customer Capture";
+subtitle.innerText = "Tap or upload image";
 
 }
 
 if(state === 2){
 
-panel.innerHTML = `
-<h2>Capture Cloth</h2>
-<p>Show shirt / outfit in camera and capture.</p>
-`;
+captureEnabled = true;
+
+title.innerText = "Cloth Capture";
+subtitle.innerText = "Tap or upload outfit";
 
 }
 
 if(state === 3){
 
-panel.innerHTML = `
+captureEnabled = false;
+
+document.getElementById("overlay").innerHTML = `
 <h2>Review</h2>
 
 <div class="preview">
@@ -129,19 +201,17 @@ panel.innerHTML = `
 <img src="${clothImage}">
 </div>
 
-<button onclick="generate()">Generate AI Try-On</button>
+<button onclick="next()">Generate AI</button>
 `;
 
 }
 
 if(state === 4){
 
-panel.innerHTML = `
-<h2>Result</h2>
-<div id="result">Processing...</div>
-`;
+document.getElementById("overlay").innerHTML =
+"<h2>Generating...</h2>";
 
-generate();
+generateAI();
 
 }
 
@@ -151,7 +221,9 @@ generate();
    AI CALL
 ====================== */
 
-async function generate(){
+async function generateAI(){
+
+try{
 
 const res = await fetch("https://api.ideainfoline.com/tryon",{
 method:"POST",
@@ -164,8 +236,18 @@ clothImage: clothImage
 
 const data = await res.json();
 
-document.getElementById("result").innerHTML =
-`<img src="${data.result}" class="resultImg">`;
+document.getElementById("overlay").innerHTML = `
+<h2>Result</h2>
+<img src="${data.result}" class="result">
+<p>Swipe to restart</p>
+`;
+
+}catch(err){
+
+document.getElementById("overlay").innerHTML =
+"<h2>AI Error</h2>";
+
+}
 
 }
 
@@ -174,5 +256,4 @@ document.getElementById("result").innerHTML =
 ====================== */
 
 initCamera();
-renderUI();
-highlightSteps();
+render();
