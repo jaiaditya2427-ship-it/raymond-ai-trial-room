@@ -1,3 +1,6 @@
+let selectedOutfit = "White Shirt";
+
+// preview image
 document.getElementById("imageInput").addEventListener("change", function(){
 const file = this.files[0];
 const preview = document.getElementById("preview");
@@ -8,53 +11,62 @@ preview.style.display = "block";
 }
 });
 
+// outfit select
+function selectOutfit(outfit){
+selectedOutfit = outfit;
+}
+
+// AI generate (backend call)
 async function generateTryOn(){
 
 const imageInput = document.getElementById("imageInput");
-const outfit = document.getElementById("outfit").value;
 const result = document.getElementById("result");
 
 if(!imageInput.files[0]){
-alert("Please upload image first");
+alert("Upload photo first");
 return;
 }
 
-result.innerHTML = "Processing try-on... 🔥";
-
-const file = imageInput.files[0];
+result.innerHTML = "Styling your look... ✨";
 
 const reader = new FileReader();
 
 reader.onload = async function(){
 
-const personImage = reader.result;
-
-// send to backend (Hostinger)
 const res = await fetch("https://api.ideainfoline.com/tryon", {
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
 body: JSON.stringify({
-personImage: personImage,
-outfit: outfit
+personImage: reader.result,
+outfit: selectedOutfit
 })
 });
 
 const data = await res.json();
 
 result.innerHTML = `
-<h3>Try-On Preview</h3>
+<h3>AI Look Ready</h3>
 <img src="${data.finalImage}" style="width:100%;border-radius:12px;" />
 `;
 
 };
 
-reader.readAsDataURL(file);
-}border-radius:12px;" />
-`;
+reader.readAsDataURL(imageInput.files[0]);
+}
 
-};
+// tab switch
+function switchTab(tab){
 
-reader.readAsDataURL(file);
+document.querySelectorAll(".section").forEach(s=>{
+s.classList.remove("active");
+});
+
+document.querySelectorAll(".tab").forEach(t=>{
+t.classList.remove("active");
+});
+
+document.getElementById(tab).classList.add("active");
+event.target.classList.add("active");
 }
