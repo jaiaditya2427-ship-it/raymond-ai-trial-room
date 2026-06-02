@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Trial Room</title>
+<title>AI Trial Studio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-<h2>Raymond AI Trial Room</h2>
+<h2>AI Virtual Trial Studio</h2>
 </header>
 
 <div class="container">
@@ -18,28 +18,44 @@
 <!-- CAMERA -->
 <div class="card">
 
-<h3>📸 Live Camera</h3>
+<h3>📸 Live Camera (Always ON)</h3>
 
 <video id="video" autoplay playsinline></video>
 
-<button onclick="startCamera()">Start Camera</button>
-<button onclick="switchMode()">Switch Mode (Customer / Cloth)</button>
-<button onclick="switchCamera()">Front / Back</button>
-<button onclick="capture()">Capture</button>
+<div class="row">
 
-<canvas id="canvas" style="display:none;"></canvas>
+<button onclick="startCamera()">Start</button>
+<button onclick="switchCamera()">Front/Back</button>
 
 </div>
 
-<!-- PREVIEWS -->
+</div>
+
+<!-- CAPTURE CONTROLS -->
 <div class="card">
 
-<h3>Captured Images</h3>
+<h3>Capture Mode</h3>
 
-<p>Customer:</p>
+<div class="row">
+
+<button onclick="setMode('customer')" id="btnCustomer">👤 Customer</button>
+<button onclick="setMode('cloth')" id="btnCloth">👕 Cloth</button>
+
+</div>
+
+<button onclick="capture()">📸 Capture Current Frame</button>
+
+</div>
+
+<!-- PREVIEW -->
+<div class="card">
+
+<h3>Captured</h3>
+
+<p>Customer</p>
 <img id="customerPreview">
 
-<p>Cloth:</p>
+<p>Cloth</p>
 <img id="clothPreview">
 
 </div>
@@ -47,7 +63,7 @@
 <!-- RESULT -->
 <div class="card">
 
-<button onclick="generateTryOn()">Generate AI Try-On</button>
+<button onclick="generate()">Generate AI Try-On</button>
 
 <div id="result">Ready</div>
 
