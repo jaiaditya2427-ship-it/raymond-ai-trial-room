@@ -3,52 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raymond Virtual Trial Room</title>
+<title>Raymond AI Trial Room</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-<h1>Raymond AI Trial Room</h1>
-<p>Luxury Virtual Try-On Experience</p>
+<h1>Raymond AI Virtual Trial Room</h1>
+<p>Live Camera Fashion Experience</p>
 </header>
 
 <div class="container">
 
-<!-- CUSTOMER IMAGE -->
+<!-- CUSTOMER CAMERA -->
 <div class="card">
-
-<h3>1. Customer Photo</h3>
-<input type="file" id="personImage" accept="image/*">
-
-<img id="preview">
-
+<h3>📸 Customer Live Camera</h3>
+<video id="customerCam" autoplay playsinline></video>
+<button onclick="captureCustomer()">Capture Customer</button>
+<canvas id="customerCanvas" style="display:none;"></canvas>
+<img id="customerPreview">
 </div>
 
-<!-- CLOTH SELECTION -->
+<!-- CLOTH CAMERA -->
 <div class="card">
-
-<h3>2. Select Outfit</h3>
-
-<div class="grid">
-
-<img src="shirt1.jpg" onclick="selectCloth(this.src)" class="cloth">
-<img src="shirt2.jpg" onclick="selectCloth(this.src)" class="cloth">
-<img src="suit1.jpg" onclick="selectCloth(this.src)" class="cloth">
-<img src="suit2.jpg" onclick="selectCloth(this.src)" class="cloth">
-
-</div>
-
+<h3>👕 Cloth Live Camera</h3>
+<video id="clothCam" autoplay playsinline></video>
+<button onclick="captureCloth()">Capture Cloth</button>
+<canvas id="clothCanvas" style="display:none;"></canvas>
+<img id="clothPreview">
 </div>
 
 <!-- ACTION -->
 <div class="card">
-
 <button onclick="generateTryOn()">Generate AI Try-On</button>
-
-<div id="result">Upload photo + select outfit</div>
-
+<div id="result">Capture both images to continue</div>
 </div>
 
 </div>
