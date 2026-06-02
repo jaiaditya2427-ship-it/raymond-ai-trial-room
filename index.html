@@ -27,13 +27,19 @@
 
 <!-- CLOTH CAMERA -->
 <div class="card">
-<h3>👕 Cloth Live Camera</h3>
-<video id="clothCam" autoplay playsinline></video>
-<button onclick="captureCloth()">Capture Cloth</button>
-<canvas id="clothCanvas" style="display:none;"></canvas>
-<img id="clothPreview">
-</div>
 
+<h3>📸 Camera</h3>
+
+<video id="video" autoplay playsinline></video>
+
+<button onclick="switchCamera()">🔄 Switch Camera</button>
+<button onclick="capture()">📸 Capture</button>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<img id="preview" style="width:100%;display:none;border-radius:12px;">
+
+</div>
 <!-- ACTION -->
 <div class="card">
 <button onclick="generateTryOn()">Generate AI Try-On</button>
