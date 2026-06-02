@@ -1,60 +1,55 @@
 let stream = null;
+let facingMode = "user";
 
-const video = () => document.getElementById("video");
-const canvas = () => document.getElementById("canvas");
+let capturedImage = "";
+let selectedCloth = "";
 
-let facingMode = "user"; // front default
-
-/* =========================
-   START CAMERA (UNIVERSAL SAFE)
-========================= */
+/* ======================
+   START CAMERA (SAFE + FIXED)
+====================== */
 
 async function startCamera() {
 
 try {
 
-// stop old stream safely
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+alert("Camera not supported in this browser");
+return;
+}
+
 if (stream) {
 stream.getTracks().forEach(track => track.stop());
 stream = null;
 }
 
-const constraints = {
-video: {
-facingMode: facingMode
-},
+stream = await navigator.mediaDevices.getUserMedia({
+video: { facingMode: facingMode },
 audio: false
-};
+});
 
-stream = await navigator.mediaDevices.getUserMedia(constraints);
+const video = document.getElementById("video");
 
-const v = video();
+video.srcObject = stream;
+video.setAttribute("playsinline", true);
+video.setAttribute("autoplay", true);
 
-v.srcObject = stream;
-v.setAttribute("playsinline", true);
-v.setAttribute("webkit-playsinline", true);
-
-await v.play();
+await video.play();
 
 }catch(err){
 
-console.log("Camera error:", err);
+console.log(err);
 
 alert(
-"Camera blocked.\n\nFix checklist:\n" +
-"1. Open in HTTPS site (Vercel / Domain)\n" +
-"2. Allow camera permission\n" +
-"3. Use Chrome or Safari\n" +
-"4. Reset camera permissions if denied"
+"Camera blocked or not supported.\n\nIMPORTANT FIX:\n1. Open in HTTPS (Vercel / Hostinger)\n2. Use Chrome or Safari\n3. Allow camera permission\n4. Do NOT open from file or Koder preview"
 );
 
 }
 
 }
 
-/* =========================
+/* ======================
    SWITCH CAMERA
-========================= */
+====================== */
 
 async function switchCamera() {
 
@@ -63,47 +58,43 @@ await startCamera();
 
 }
 
-/* =========================
+/* ======================
    CAPTURE IMAGE
-========================= */
-
-let capturedImage = "";
+====================== */
 
 function capture() {
 
-const v = video();
-const c = canvas();
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
 
-c.width = v.videoWidth;
-c.height = v.videoHeight;
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
 
-c.getContext("2d").drawImage(v, 0, 0);
+canvas.getContext("2d").drawImage(video, 0, 0);
 
-capturedImage = c.toDataURL("image/png");
+capturedImage = canvas.toDataURL("image/png");
 
 document.getElementById("preview").src = capturedImage;
 
 }
 
-/* =========================
-   CLOTH SELECT
-========================= */
-
-let selectedCloth = "";
+/* ======================
+   SELECT CLOTH
+====================== */
 
 function selectCloth(src) {
 selectedCloth = src;
 alert("Cloth selected ✔");
 }
 
-/* =========================
-   TRY ON API CALL
-========================= */
+/* ======================
+   TRY ON
+====================== */
 
 async function generateTryOn() {
 
 if (!capturedImage) {
-alert("Capture customer image first");
+alert("Capture image first");
 return;
 }
 
@@ -112,15 +103,14 @@ alert("Select cloth first");
 return;
 }
 
-document.getElementById("result").innerHTML = "Generating AI Try-On...";
+document.getElementById("result").innerHTML =
+"Generating AI Try-On...";
 
 try {
 
 const res = await fetch("https://api.ideainfoline.com/tryon", {
 method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
+headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
 personImage: capturedImage,
 clothImage: selectedCloth
@@ -129,17 +119,15 @@ clothImage: selectedCloth
 
 const data = await res.json();
 
-document.getElementById("result").innerHTML = `
-<h3>Result</h3>
-<img src="${data.result}" style="width:100%;border-radius:12px;">
-`;
+document.getElementById("result").innerHTML =
+`<img src="${data.result}" style="width:100%;border-radius:12px;">`;
 
 }catch(err){
 
 console.log(err);
 
 document.getElementById("result").innerHTML =
-"Server error. Try again.";
+"Server error";
 
 }
 
