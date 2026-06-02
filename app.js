@@ -7,12 +7,35 @@ let customerImage = "";
 let clothImage = "";
 
 /* ======================
-   CAMERA INIT (ONLY ONCE)
+   SOUND (SAFE)
+====================== */
+
+const clickSound = new Audio("https://www.myinstants.com/media/sounds/mouse-click.mp3");
+
+function playClick(){
+try{
+clickSound.currentTime = 0;
+clickSound.play();
+}catch(e){}
+}
+
+/* ======================
+   VIBRATION
+====================== */
+
+function vibrate(){
+if(navigator.vibrate){
+navigator.vibrate(15);
+}
+}
+
+/* ======================
+   CAMERA INIT (IMPORTANT FIXED)
 ====================== */
 
 async function initCamera(){
 
-if(stream) return;
+try{
 
 stream = await navigator.mediaDevices.getUserMedia({
 video:{facingMode},
@@ -21,24 +44,35 @@ audio:false
 
 document.getElementById("video").srcObject = stream;
 
+}catch(err){
+alert("Camera blocked. Please allow permission + use HTTPS (Vercel)");
+console.log(err);
+}
+
 }
 
 /* ======================
-   SWITCH CAMERA
+   TAP = CAPTURE
 ====================== */
 
-function switchCamera(){
+document.addEventListener("click", capture);
 
-facingMode = (facingMode === "user") ? "environment" : "user";
+/* ======================
+   SWIPE (BASIC + SAFE)
+====================== */
 
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-stream = null;
-}
+let startX = 0;
 
-initCamera();
+document.addEventListener("touchstart",(e)=>{
+startX = e.touches[0].clientX;
+});
 
-}
+document.addEventListener("touchend",(e)=>{
+let endX = e.changedTouches[0].clientX;
+
+if(endX < startX - 50) next();
+if(endX > startX + 50) prev();
+});
 
 /* ======================
    CAPTURE IMAGE
@@ -46,148 +80,102 @@ initCamera();
 
 function capture(){
 
+playClick();
+vibrate();
+
 const video = document.getElementById("video");
+
 const canvas = document.createElement("canvas");
 
-canvas.width = video.videoWidth * 0.7;
-canvas.height = video.videoHeight * 0.7;
+canvas.width = video.videoWidth || 300;
+canvas.height = video.videoHeight || 300;
 
-canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);
+canvas.getContext("2d").drawImage(video,0,0);
 
 let img = canvas.toDataURL("image/jpeg",0.7);
 
 if(state === 1){
 customerImage = img;
-next(2);
+next();
 }
 
 else if(state === 2){
 clothImage = img;
-next(3);
+next();
 }
 
 }
 
 /* ======================
-   UPLOAD CUSTOMER IMAGE
+   STATE CONTROL
 ====================== */
 
-function uploadCustomer(event){
-
-const file = event.target.files[0];
-const reader = new FileReader();
-
-reader.onload = function(e){
-customerImage = e.target.result;
-next(2);
-};
-
-reader.readAsDataURL(file);
-}
-
-/* ======================
-   UPLOAD CLOTH IMAGE
-====================== */
-
-function uploadCloth(event){
-
-const file = event.target.files[0];
-const reader = new FileReader();
-
-reader.onload = function(e){
-clothImage = e.target.result;
-next(3);
-};
-
-reader.readAsDataURL(file);
-}
-
-/* ======================
-   STATE NAVIGATION
-====================== */
-
-function next(n){
-
-state = n;
-
-document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
-document.getElementById("s"+n).classList.add("active");
-
+function next(){
+if(state < 4) state++;
 render();
+}
 
+function prev(){
+if(state > 1) state--;
+render();
 }
 
 /* ======================
-   UI ENGINE
+   UI RENDER
 ====================== */
 
 function render(){
 
-const panel = document.getElementById("panelContent");
+document.querySelectorAll(".dot").forEach(d=>d.classList.remove("active"));
+document.getElementById("d"+state).classList.add("active");
 
-panel.className = "fade";
+const title = document.getElementById("title");
+const subtitle = document.getElementById("subtitle");
 
 if(state === 1){
-
-panel.innerHTML = `
-<h2>Capture or Upload Customer</h2>
-
-<div class="uploadBox">
-<input type="file" accept="image/*" onchange="uploadCustomer(event)">
-</div>
-
-<p>Use camera or upload image</p>
-`;
-
+title.innerText = "Customer Capture";
+subtitle.innerText = "Tap to capture customer image";
 }
 
 if(state === 2){
-
-panel.innerHTML = `
-<h2>Capture or Upload Cloth</h2>
-
-<div class="uploadBox">
-<input type="file" accept="image/*" onchange="uploadCloth(event)">
-</div>
-
-<p>Take photo or upload outfit</p>
-`;
-
+title.innerText = "Cloth Capture";
+subtitle.innerText = "Tap to capture outfit image";
 }
 
 if(state === 3){
+title.innerText = "Review";
+subtitle.innerText = "Swipe to generate AI result";
 
-panel.innerHTML = `
+document.getElementById("overlay").innerHTML = `
 <h2>Review</h2>
-
 <div class="preview">
 <img src="${customerImage}">
 <img src="${clothImage}">
 </div>
-
-<button onclick="next(4)">Generate AI Try-On</button>
+<p>Swipe left to generate</p>
 `;
 
 }
 
 if(state === 4){
-
-panel.innerHTML = `
-<h2>Result</h2>
-<div id="result">Processing...</div>
-`;
+title.innerText = "Processing";
+subtitle.innerText = "AI generating result...";
 
 generate();
-
 }
 
 }
 
 /* ======================
-   AI CALL
+   AI CALL (SAFE)
 ====================== */
 
 async function generate(){
+
+document.getElementById("overlay").innerHTML =
+"<h2>Generating...</h2>";
+
+try{
 
 const res = await fetch("https://api.ideainfoline.com/tryon",{
 method:"POST",
@@ -200,15 +188,26 @@ clothImage: clothImage
 
 const data = await res.json();
 
-document.getElementById("result").innerHTML =
-`<img src="${data.result}" class="resultImg">`;
+document.getElementById("overlay").innerHTML = `
+<h2>Result</h2>
+<img src="${data.result}" class="result">
+<p>Swipe to restart</p>
+`;
+
+}catch(err){
+
+document.getElementById("overlay").innerHTML =
+"<h2>AI Error</h2>";
+
+console.log(err);
+
+}
 
 }
 
 /* ======================
-   START APP
+   START
 ====================== */
 
 initCamera();
 render();
-next(1);
