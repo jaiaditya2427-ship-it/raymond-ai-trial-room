@@ -12,34 +12,32 @@
 <body>
 
 <header>
-<h1>Raymond AI Virtual Trial Room</h1>
-<p>Try outfits before visiting the showroom</p>
+<h1>Raymond AI Trial Room</h1>
+<p>Luxury Virtual Fashion Experience</p>
 </header>
 
 <div class="container">
 
+<div class="card">
+
 <input type="file" id="imageInput" accept="image/*">
 
-<img id="preview" src="" alt="Preview">
+<img id="preview">
 
 <select id="outfit">
-<option>White Shirt</option>
-<option>Black Suit</option>
-<option>Blue Blazer</option>
-<option>Sherwani</option>
+<option>Classic White Shirt</option>
+<option>Black Premium Suit</option>
+<option>Navy Blue Blazer</option>
+<option>Wedding Sherwani</option>
 </select>
 
-<button id="tryBtn">
-Try Outfit
-</button>
+<button onclick="generateTryOn()">Try Outfit</button>
 
-<div id="result">
-Your AI result will appear here.
-</div>
+<div id="result">Upload photo to start</div>
 
 </div>
 
-<script src="app.js"></script>
+</div>
 
 </body>
 </html>
