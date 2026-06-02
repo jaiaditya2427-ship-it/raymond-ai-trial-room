@@ -1,111 +1,92 @@
-let customerStream;
-let clothStream;
+let stream;
+let facingMode = "user";
 
-let customerFacing = "user";
-let clothFacing = "environment";
-
-let customerImage = "";
-let clothImage = "";
+let capturedImage = "";
+let selectedCloth = "";
 
 /* ======================
-   START BOTH CAMERAS
+   START CAMERA
 ====================== */
 
-async function startCustomerCam(){
+async function startCamera(){
 
-if(customerStream){
-customerStream.getTracks().forEach(t=>t.stop());
+try{
+
+if(stream){
+stream.getTracks().forEach(track => track.stop());
 }
 
-customerStream = await navigator.mediaDevices.getUserMedia({
-video:{facingMode: customerFacing}
+stream = await navigator.mediaDevices.getUserMedia({
+video:{ facingMode: facingMode }
 });
 
-document.getElementById("customerVideo").srcObject = customerStream;
+document.getElementById("video").srcObject = stream;
+
+}catch(err){
+alert("Camera blocked. Please allow permission in Safari settings.");
+console.log(err);
 }
 
-async function startClothCam(){
-
-if(clothStream){
-clothStream.getTracks().forEach(t=>t.stop());
-}
-
-clothStream = await navigator.mediaDevices.getUserMedia({
-video:{facingMode: clothFacing}
-});
-
-document.getElementById("clothVideo").srcObject = clothStream;
 }
 
 /* ======================
-   SWITCH CAMERAS
+   SWITCH CAMERA
 ====================== */
 
-function switchCustomerCam(){
+function switchCamera(){
 
-customerFacing = (customerFacing === "user") ? "environment" : "user";
-startCustomerCam();
-}
+facingMode = (facingMode === "user") ? "environment" : "user";
+startCamera();
 
-function switchClothCam(){
-
-clothFacing = (clothFacing === "user") ? "environment" : "user";
-startClothCam();
 }
 
 /* ======================
-   CAPTURE CUSTOMER
+   CAPTURE IMAGE
 ====================== */
 
-function captureCustomer(){
+function capture(){
 
-const video = document.getElementById("customerVideo");
-const canvas = document.getElementById("customerCanvas");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
 
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
 
 canvas.getContext("2d").drawImage(video,0,0);
 
-customerImage = canvas.toDataURL("image/png");
+capturedImage = canvas.toDataURL("image/png");
 
-document.getElementById("customerPreview").src = customerImage;
-document.getElementById("customerPreview").style.display = "block";
+document.getElementById("preview").src = capturedImage;
+
 }
 
 /* ======================
-   CAPTURE CLOTH
+   SELECT CLOTH
 ====================== */
 
-function captureCloth(){
-
-const video = document.getElementById("clothVideo");
-const canvas = document.getElementById("clothCanvas");
-
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
-
-canvas.getContext("2d").drawImage(video,0,0);
-
-clothImage = canvas.toDataURL("image/png");
-
-document.getElementById("clothPreview").src = clothImage;
-document.getElementById("clothPreview").style.display = "block";
+function selectCloth(src){
+selectedCloth = src;
+alert("Cloth selected ✔");
 }
 
 /* ======================
-   TRY ON
+   TRY ON (BACKEND READY)
 ====================== */
 
 async function generateTryOn(){
 
-if(!customerImage || !clothImage){
-alert("Capture both images first");
+if(!capturedImage){
+alert("Capture customer image first");
+return;
+}
+
+if(!selectedCloth){
+alert("Select cloth first");
 return;
 }
 
 document.getElementById("result").innerHTML =
-"Generating AI Try-On... ✨";
+"Generating AI Try-On...";
 
 const res = await fetch("https://api.ideainfoline.com/tryon", {
 method:"POST",
@@ -113,22 +94,16 @@ headers:{
 "Content-Type":"application/json"
 },
 body: JSON.stringify({
-personImage: customerImage,
-clothImage: clothImage
+personImage: capturedImage,
+clothImage: selectedCloth
 })
 });
 
 const data = await res.json();
 
 document.getElementById("result").innerHTML = `
-<h3>AI Result</h3>
-<img src="${data.result}" style="width:100%;border-radius:12px;display:block;">
+<h3>Result</h3>
+<img src="${data.result}">
 `;
+
 }
-
-/* ======================
-   INIT
-====================== */
-
-startCustomerCam();
-startClothCam();
