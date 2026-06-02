@@ -3,60 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Raymond AI Trial Room</title>
-
+<title>AI Trial Room</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-<h2>Raymond AI Virtual Trial Room</h2>
-<p>Luxury Store Experience</p>
+<h2>Raymond AI Trial Room</h2>
 </header>
 
 <div class="container">
 
-<!-- CUSTOMER CAMERA -->
+<!-- CAMERA -->
 <div class="card">
 
-<h3>📸 Customer Live Camera</h3>
+<h3>📸 Live Camera</h3>
 
 <video id="video" autoplay playsinline></video>
 
 <button onclick="startCamera()">Start Camera</button>
-<button onclick="switchCamera()">Switch Camera</button>
-<button onclick="capture()">Capture Customer</button>
+<button onclick="switchMode()">Switch Mode (Customer / Cloth)</button>
+<button onclick="switchCamera()">Front / Back</button>
+<button onclick="capture()">Capture</button>
 
 <canvas id="canvas" style="display:none;"></canvas>
 
-<img id="preview">
-
 </div>
 
-<!-- CLOTH SELECTION -->
+<!-- PREVIEWS -->
 <div class="card">
 
-<h3>👕 Select Outfit (Tap to choose)</h3>
+<h3>Captured Images</h3>
 
-<div class="grid">
+<p>Customer:</p>
+<img id="customerPreview">
 
-<img src="shirt1.jpg" class="cloth" onclick="selectCloth(this)">
-<img src="shirt2.jpg" class="cloth" onclick="selectCloth(this)">
-<img src="suit1.jpg" class="cloth" onclick="selectCloth(this)">
-<img src="pant1.jpg" class="cloth" onclick="selectCloth(this)">
-
-</div>
+<p>Cloth:</p>
+<img id="clothPreview">
 
 </div>
 
-<!-- AI ACTION -->
+<!-- RESULT -->
 <div class="card">
 
 <button onclick="generateTryOn()">Generate AI Try-On</button>
 
-<div id="result">Ready for luxury experience</div>
+<div id="result">Ready</div>
 
 </div>
 
