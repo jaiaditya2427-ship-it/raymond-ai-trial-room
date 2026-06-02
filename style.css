@@ -1,64 +1,65 @@
 body{
 margin:0;
-font-family:Arial, sans-serif;
-background: radial-gradient(circle at top, #1f1f2e, #0b0b12);
+font-family:Arial;
+background: radial-gradient(circle at top,#1a1a2e,#0b0b12);
 color:white;
 }
 
 header{
 text-align:center;
-padding:30px 20px;
-background: rgba(255,255,255,0.05);
-backdrop-filter: blur(10px);
+padding:25px;
+background:rgba(255,255,255,0.05);
 }
 
 header h1{
-font-size:26px;
 color:#f5c542;
 margin:0;
 }
 
-header p{
-opacity:0.7;
+.tabs{
+display:flex;
+justify-content:center;
+gap:10px;
+margin:15px;
 }
 
-.container{
-max-width:500px;
-margin:auto;
-padding:20px;
+.tab{
+padding:10px 15px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+background:rgba(255,255,255,0.1);
+color:white;
+}
+
+.tab.active{
+background:#f5c542;
+color:black;
+}
+
+.section{
+display:none;
+padding:10px;
+}
+
+.section.active{
+display:block;
 }
 
 .card{
-background: rgba(255,255,255,0.06);
+max-width:500px;
+margin:auto;
+background:rgba(255,255,255,0.06);
 padding:20px;
-border-radius:18px;
-margin-top:20px;
-backdrop-filter: blur(12px);
-box-shadow:0 10px 30px rgba(0,0,0,0.4);
+border-radius:20px;
+backdrop-filter:blur(10px);
 }
 
-input, select{
-width:100%;
-padding:12px;
-margin-top:12px;
-border:none;
-border-radius:10px;
-outline:none;
-}
-
-button{
-width:100%;
-padding:14px;
-margin-top:15px;
-border:none;
+.upload-box{
+border:2px dashed #f5c542;
+padding:15px;
 border-radius:12px;
-background: linear-gradient(135deg, #f5c542, #ff9f1a);
-font-weight:bold;
-cursor:pointer;
-}
-
-button:active{
-transform:scale(0.98);
+text-align:center;
 }
 
 #preview{
@@ -68,9 +69,40 @@ border-radius:12px;
 display:none;
 }
 
-#result{
-margin-top:20px;
-padding:15px;
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:15px;
+}
+
+.item{
+padding:12px;
+background:rgba(255,255,255,0.1);
+border-radius:10px;
+cursor:pointer;
+text-align:center;
+}
+
+.item:hover{
+background:#f5c542;
+color:black;
+}
+
+button{
+width:100%;
+margin-top:15px;
+padding:14px;
+border:none;
 border-radius:12px;
-background: rgba(0,0,0,0.3);
+background:#f5c542;
+font-weight:bold;
+cursor:pointer;
+}
+
+#result{
+margin-top:15px;
+padding:12px;
+background:rgba(0,0,0,0.3);
+border-radius:12px;
 }
