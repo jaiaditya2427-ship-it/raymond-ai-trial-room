@@ -136,44 +136,33 @@ if (active) active.classList.add("active");
 function showReview() {
 updateDots();
 
-overlay.innerHTML = `
-
-  <div class="glass-card">
-      <h1>Review</h1>
+overlay.innerHTML = ` <div class="glass-card"> <h1>Review</h1>
 
 ```
   <div class="preview">
-      <img src="${customerImage}">
-      <img src="${clothImage}">
+    <img src="${customerImage}">
+    <img src="${clothImage}">
   </div>
 
   <div class="actions">
-      <button class="btn-primary"
-        onclick="generateAI()">
-        Generate
-      </button>
+    <button class="btn-primary" onclick="generateAI()">
+      Generate
+    </button>
 
-      <button class="btn-secondary"
-        onclick="location.reload()">
-        Restart
-      </button>
+    <button class="btn-secondary" onclick="location.reload()">
+      Restart
+    </button>
   </div>
+</div>
 ```
 
-  </div>
-  `;
+`;
 }
 
 async function generateAI() {
 
-overlay.innerHTML = `
-
-  <div class="glass-card">
-      <div class="loader"></div>
-      <p style="text-align:center">
-      Generating AI Try-On...
-      </p>
-  </div>
+overlay.innerHTML = `     <div class="glass-card">       <div class="loader"></div>       <p style="text-align:center">
+        Generating AI Try-On...       </p>     </div>
   `;
 
 try {
@@ -203,7 +192,6 @@ const resultImage =
 
 overlay.innerHTML = `
   <div class="glass-card">
-
     <h1>Result</h1>
 
     <img
@@ -212,15 +200,12 @@ overlay.innerHTML = `
     >
 
     <div class="actions">
-
       <button
         class="btn-primary"
         onclick="location.reload()">
         Try Again
       </button>
-
     </div>
-
   </div>
 `;
 ```
@@ -232,13 +217,8 @@ console.error(err);
 
 overlay.innerHTML = `
   <div class="error-card">
-
     <h3>Generation Failed</h3>
-
-    <p>
-    Backend unavailable or API error.
-    </p>
-
+    <p>Backend unavailable or API error.</p>
   </div>
 `;
 ```
