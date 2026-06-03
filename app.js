@@ -1,316 +1,161 @@
-let stream;
-let state = 1;
-
+let stream = null;
 let currentFacingMode = "environment";
+let state = 1;
 
 let customerImage = "";
 let clothImage = "";
 
-let captureEnabled = true;
-
-/* =========================
-   A) SHUTTER SOUND
-========================= */
-
-const shutterSound = new Audio(
-"https://www.myinstants.com/media/sounds/camera-shutter-click.mp3"
-);
-
-function playShutter(){
-try{
-shutterSound.currentTime = 0;
-shutterSound.play();
-}catch(e){}
+async function startCamera() {
+try {
+if (stream) {
+stream.getTracks().forEach(t => t.stop());
 }
 
-/* =========================
-   B) HAPTIC VIBRATION
-========================= */
-
-function vibrate(){
-if(navigator.vibrate){
-navigator.vibrate(20);
-}
-}
-
-/* =========================
-   C) FLASH EFFECT
-========================= */
-
-function cameraFlash(){
-const flash = document.getElementById("flash");
-
-if(!flash) return;
-
-flash.classList.add("active");
-
-setTimeout(()=>{
-flash.classList.remove("active");
-},150);
-}
-
-/* =========================
-   D) RIPPLE EFFECT
-========================= */
-
-async function startCamera(){
-
-try{
-
-if(stream){
-stream.getTracks().forEach(track => track.stop());
-}
-
+```
 stream = await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode: currentFacingMode
-},
-audio:false
+  video: { facingMode: currentFacingMode },
+  audio: false
 });
 
 const video = document.getElementById("video");
-
-if(video){
 video.srcObject = stream;
 await video.play();
+```
+
+} catch (err) {
+console.error("Camera error:", err);
+alert("Unable to access camera.");
+}
 }
 
-}catch(err){
-
-console.log(err);
-alert("Camera not allowed or not supported (use HTTPS)");
-
-}
-
-}
-
-function switchCamera(){
-
-playShutter();
-vibrate();
-
+async function switchCamera() {
 currentFacingMode =
-currentFacingMode === "environment"
-? "user"
-: "environment";
+currentFacingMode === "environment" ? "user" : "environment";
 
-startCamera();
-
+await startCamera();
 }
 
-/* =========================
-   CAPTURE IMAGE
-========================= */
+function openUpload() {
+document.getElementById("fileInput").click();
+}
 
-function capture(){
+document.getElementById("fileInput").addEventListener("change", (e) => {
+const file = e.target.files[0];
+if (!file) return;
 
-if(!captureEnabled) return;
+const reader = new FileReader();
 
-playShutter();
-vibrate();
-cameraFlash();
+reader.onload = (ev) => {
+if (state === 1) {
+customerImage = ev.target.result;
+state = 2;
+updateUI();
+} else if (state === 2) {
+clothImage = ev.target.result;
+state = 3;
+updateUI();
+}
+};
+
+reader.readAsDataURL(file);
+});
+
+function capture() {
+if (!stream) return;
 
 const video = document.getElementById("video");
-
-if(!video.videoWidth){
-alert("Camera not ready");
-return;
-}
 
 const canvas = document.createElement("canvas");
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
 
-canvas.getContext("2d").drawImage(video,0,0);
+const ctx = canvas.getContext("2d");
+ctx.drawImage(video, 0, 0);
 
-let img = canvas.toDataURL("image/jpeg",0.8);
+const image = canvas.toDataURL("image/jpeg", 0.9);
 
-if(state === 1){
-customerImage = img;
+if (state === 1) {
+customerImage = image;
 state = 2;
-updateUI();
-return;
-}
-
-if(state === 2){
-clothImage = img;
+} else if (state === 2) {
+clothImage = image;
 state = 3;
-updateUI();
-return;
 }
 
-}
-
-/* =========================
-   UPLOAD
-========================= */
-
-function openUpload(){
-document.getElementById("fileInput").click();
-}
-
-const fileInput = document.getElementById("fileInput");
-
-if(fileInput){
-
-fileInput.addEventListener("change",(e)=>{
-
-const file = e.target.files[0];
-
-if(!file) return;
-
-const reader = new FileReader();
-
-reader.onload = function(ev){
-
-if(state === 1){
-customerImage = ev.target.result;
-state = 2;
-updateUI();
-}
-else if(state === 2){
-clothImage = ev.target.result;
-state = 3;
 updateUI();
 }
 
-};
+function updateUI() {
+document.querySelectorAll(".dot").forEach(d => d.classList.remove("active"));
 
-reader.readAsDataURL(file);
-
-});
-
-}
-
-
-/* =========================
-   E) UI FLOW (STATE SYSTEM)
-========================= */
-
-function updateUI(){
+const dot = document.getElementById("d" + state);
+if (dot) dot.classList.add("active");
 
 const title = document.getElementById("title");
 const subtitle = document.getElementById("subtitle");
+const overlay = document.getElementById("overlay");
 
-document.querySelectorAll(".dot").forEach(d=>d.classList.remove("active"));
-document.getElementById("d"+state).classList.add("active");
-
-if(state === 1){
-captureEnabled = true;
+if (state === 1) {
 title.innerText = "Customer Capture";
-subtitle.innerText = "Capture or upload customer image";
+subtitle.innerText = "Capture customer image or upload photo";
 }
 
-if(state === 2){
-captureEnabled = true;
+if (state === 2) {
 title.innerText = "Cloth Capture";
-subtitle.innerText = "Capture or upload cloth image";
+subtitle.innerText = "Capture garment image or upload photo";
 }
 
-if(state === 3){
-captureEnabled = false;
-
-document.getElementById("overlay").innerHTML = `
-<div class="glass-card">
-
-<h1>Review</h1>
-
-<div class="preview">
-<img src="${customerImage}">
-<img src="${clothImage}">
-</div>
-
-<button onclick="generateAI()">Generate</button>
-
-</div>
-`;
+if (state === 3) {
+overlay.innerHTML = `       <div class="glass-card">         <h1>Review</h1>         <div class="preview">           <img src="${customerImage}">           <img src="${clothImage}">         </div>         <button class="btn-primary" onclick="generateAI()">Generate</button>       </div>
+    `;
+}
 }
 
-if(state === 4){
-document.getElementById("overlay").innerHTML = `
-<div class="glass-card">
-<div class="loader"></div>
-<p>Processing AI...</p>
-</div>
-`;
-}
+async function generateAI() {
+const overlay = document.getElementById("overlay");
 
-}
+overlay.innerHTML = `     <div class="glass-card">       <div class="loader"></div>       <p>Generating...</p>     </div>
+  `;
 
-/* =========================
-   AI GENERATION (STEP 3)
-========================= */
-
-async function generateAI(){
-
-state = 4;
-updateUI();
-
-/* SHOW AI SCREEN */
-document.getElementById("aiScreen")?.classList.remove("hidden");
-
-try{
-
+try {
 const res = await fetch(
 "https://ai-fashion-api.onrender.com/generate",
 {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
+method: "POST",
+headers: {
+"Content-Type": "application/json"
 },
-body:JSON.stringify({
-personImage:customerImage,
-clothImage:clothImage
+body: JSON.stringify({
+personImage: customerImage,
+clothImage: clothImage
 })
 }
 );
 
-const data = await res.json();
-.then(res => res.json())
-.then(data => {
-  console.log(data);
-})
-.catch(err => {
-  console.error(err);
-});
-
+```
 const data = await res.json();
 
-/* HIDE AI SCREEN */
-document.getElementById("aiScreen")?.classList.add("hidden");
-
-document.getElementById("overlay").innerHTML = `
-<div class="glass-card">
-
-<h1>Result</h1>
-
-<img class="result" src="${data.result}">
-
-<a href="${data.result}" download>
-<button class="btn-primary">
-Save Result
-</button>
-</a>
-
-</div>
+overlay.innerHTML = `
+  <div class="glass-card">
+    <h1>Result</h1>
+    <img class="result" src="${data.result || data.image || ''}">
+  </div>
 `;
+```
 
-}catch(err){
+} catch (err) {
+console.error(err);
 
-document.getElementById("aiScreen")?.classList.add("hidden");
-
-document.getElementById("overlay").innerHTML =
-"<div class='error-card'>AI Failed</div>";
-
-console.log(err);
+```
+overlay.innerHTML = `
+  <div class="error-card">
+    AI generation failed
+  </div>
+`;
+```
 
 }
-
 }
-
-/* =========================
-   INIT
-========================= */
 
 startCamera();
 updateUI();
