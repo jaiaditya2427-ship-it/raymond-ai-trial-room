@@ -53,21 +53,50 @@ flash.classList.remove("active");
    D) RIPPLE EFFECT
 ========================= */
 
-document.addEventListener("click", function(e){
+async function startCamera(){
 
-const ripple = document.createElement("div");
-ripple.className = "ripple";
+try{
 
-ripple.style.left = e.clientX + "px";
-ripple.style.top = e.clientY + "px";
+if(stream){
+stream.getTracks().forEach(track => track.stop());
+}
 
-document.body.appendChild(ripple);
-
-setTimeout(()=>{
-ripple.remove();
-},400);
-
+stream = await navigator.mediaDevices.getUserMedia({
+video:{
+facingMode: currentFacingMode
+},
+audio:false
 });
+
+const video = document.getElementById("video");
+
+if(video){
+video.srcObject = stream;
+await video.play();
+}
+
+}catch(err){
+
+console.log(err);
+alert("Camera not allowed or not supported (use HTTPS)");
+
+}
+
+}
+
+function switchCamera(){
+
+playShutter();
+vibrate();
+
+currentFacingMode =
+currentFacingMode === "environment"
+? "user"
+: "environment";
+
+startCamera();
+
+}
 
 /* =========================
    CAMERA START
