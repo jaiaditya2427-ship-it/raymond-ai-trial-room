@@ -1,241 +1,315 @@
-// Robust AI Try-On single-file script
+// Production-Ready AI Try-On Script
 
-// Global variables for state
+// Global state
 let stream = null;
-let facingMode = 'environment';  // 'environment' (rear) or 'user' (front) camera
-let state = 1;                   // 1=Customer, 2=Cloth, 3=Review
+let facingMode = 'environment'; // 'user' for front, 'environment' for rear
+let state = 1;  // 1=Customer, 2=Cloth, 3=Review
 let customerImage = null;
 let clothImage = null;
+const API_URL = 'https://ai-fashion-api.onrender.com/generate';  // <--- replace with your actual endpoint
 
+// Debug flag for verbose logging
+const DEBUG = false;
+
+// Utility: Log if debug mode
+function log(...args) {
+  if (DEBUG) console.log(...args);
+}
+
+// Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM fully loaded');
-  startCamera();  // Initialize camera on load
+  log('DOM loaded');
+  // Check for camera API
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Camera API not supported. App will use upload only.');
+    const video = document.getElementById('video');
+    if (video) video.style.display = 'none';
+  } else {
+    startCamera();  // Initialize camera
+  }
 
-  // Set up file input handler
+  // File input handler
   const fileInput = document.getElementById('fileInput');
   if (fileInput) {
     fileInput.addEventListener('change', handleUpload);
   } else {
-    console.error('File input element (#fileInput) not found');
+    console.error('File input element not found');
   }
 });
 
-// Helper: vibrate for haptic feedback (if supported and after user interaction)
+// Haptic feedback: vibrate pattern (if supported, requires user interaction)
 function vibrate(pattern = 30) {
   if (navigator.vibrate) {
     navigator.vibrate(pattern);
   }
 }
 
-// Start or restart the camera with the current facingMode
+// Click sound effect (requires a sound file, optional)
+function playClickSound() {
+  const audio = new Audio('click.mp3'); // Add a click.mp3 in your project root
+  audio.play().catch(e => console.warn('Click sound error:', e));
+}
+
+// Flash effect for capture
+function flashEffect() {
+  const flash = document.getElementById('flash');
+  if (!flash) return;
+  flash.classList.add('active');
+  setTimeout(() => { flash.classList.remove('active'); }, 100);
+}
+
+// Ripple effect on buttons (basic implementation)
+function rippleEffect(event) {
+  const button = event.currentTarget;
+  const circle = document.createElement('span');
+  const diameter = Math.max(button.clientWidth, button.clientHeight);
+  const radius = diameter / 2;
+  circle.style.width = circle.style.height = diameter + 'px';
+  circle.style.left = (event.clientX - button.offsetLeft - radius) + 'px';
+  circle.style.top = (event.clientY - button.offsetTop - radius) + 'px';
+  circle.classList.add('ripple');
+  const ripple = button.getElementsByClassName('ripple')[0];
+  if (ripple) ripple.remove();
+  button.appendChild(circle);
+}
+document.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', rippleEffect);
+});
+
+// Start (or restart) the camera with the current facingMode
 async function startCamera() {
   const video = document.getElementById('video');
   if (!video) {
-    console.error('Video element (#video) not found');
+    console.error('Video element not found');
     return;
   }
   try {
-    // Stop existing stream if any
+    // Stop any existing stream
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
-      console.log('Previous camera stream stopped');
+      log('Stopped previous stream');
     }
-    // Request user media
+    // Request camera
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: facingMode } },
+      video: { facingMode: facingMode },
       audio: false
     });
     video.srcObject = stream;
     await video.play();
-    console.log(`Camera started (${facingMode})`);
+    log('Camera started:', facingMode);
   } catch (err) {
-    console.error('Failed to start camera', err);
-    alert('Camera Error: ' + err.message);
+    console.error('Error starting camera:', err);
+    const overlay = document.getElementById('overlay');
+    overlay.innerHTML = `
+      <div class="glass-card error-card">
+        <h3>Camera Error</h3>
+        <p>${err.message}</p>
+      </div>`;
   }
 }
 
-// Switch between front and rear cameras
+// Switch between front and rear camera
 async function switchCamera() {
-  vibrate();
-  facingMode = (facingMode === 'environment' ? 'user' : 'environment');
-  console.log('Switching camera to', facingMode);
+  vibrate(50);
+  facingMode = (facingMode === 'environment') ? 'user' : 'environment';
   await startCamera();
 }
 
-// Trigger the hidden file input for upload
+// Trigger the hidden file input
 function openUpload() {
-  const fileInput = document.getElementById('fileInput');
-  if (fileInput) {
-    fileInput.click();
-  } else {
-    console.error('File input element (#fileInput) not found');
-  }
+  document.getElementById('fileInput').click();
 }
 
-// Handle file selection for upload (customer or cloth image)
+// Handle uploaded image file
 function handleUpload(event) {
+  vibrate(50);
   const file = event.target.files[0];
   if (!file) return;
-  console.log('File selected:', file.name);
   const reader = new FileReader();
-  reader.onload = ev => {
-    processImage(ev.target.result);
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Resize if needed (max dimension = 1024px)
+      const MAX = 1024;
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX || height > MAX) {
+        if (width > height) {
+          height = (MAX / width) * height;
+          width = MAX;
+        } else {
+          width = (MAX / height) * width;
+          height = MAX;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+      processImage(dataURL);
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// Flash effect for capture (assumes CSS with .active on #flash creates a brief white flash)
-function flashEffect() {
-  const flash = document.getElementById('flash');
-  if (!flash) return;
-  flash.classList.add('active');  // e.g. .active { opacity: 1; transition: none; }
-  setTimeout(() => flash.classList.remove('active'), 150);
-}
-
-// Capture an image from the video stream
+// Capture an image from the camera
 function capture() {
   const video = document.getElementById('video');
-  if (!video || !video.videoWidth) {
+  if (!video || video.videoWidth === 0) {
     alert('Camera not ready');
-    console.warn('Video element not ready for capture');
     return;
   }
   vibrate(50);
   flashEffect();
-
-  // Draw video frame to canvas
+  // Prepare a canvas to capture frame (and resize if needed)
+  const MAX = 1024;
+  let width = video.videoWidth;
+  let height = video.videoHeight;
+  if (width > MAX || height > MAX) {
+    if (width > height) {
+      height = (MAX / width) * height;
+      width = MAX;
+    } else {
+      width = (MAX / height) * width;
+      height = MAX;
+    }
+  }
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  // Convert to JPEG data URL
-  const imageData = canvas.toDataURL('image/jpeg', 0.95);
-  processImage(imageData);
+  ctx.drawImage(video, 0, 0, width, height);
+  const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+  processImage(dataURL);
 }
 
-// Process the captured or uploaded image according to the current step
-function processImage(imageData) {
+// Process the captured or uploaded image based on current state
+function processImage(dataURL) {
   if (state === 1) {
-    // Customer image captured
-    customerImage = imageData;
+    // First image captured/uploaded: Customer image
+    customerImage = dataURL;
     state = 2;
-    console.log('Customer image captured, moving to Cloth Capture');
-    // Update UI text for next step
-    const title = document.getElementById('title');
-    const subtitle = document.getElementById('subtitle');
-    if (title) title.textContent = 'Cloth Capture';
-    if (subtitle) subtitle.textContent = 'Capture or upload garment image';
+    document.getElementById('title').textContent = 'Cloth Capture';
+    document.getElementById('subtitle').textContent = 'Capture or upload clothing image';
     updateDots();
     return;
   }
   if (state === 2) {
-    // Cloth image captured
-    clothImage = imageData;
+    // Second image: Clothing image
+    clothImage = dataURL;
     state = 3;
-    console.log('Cloth image captured, moving to Review');
     showReview();
-    return;
   }
 }
 
-// Update the dot indicators (assumes CSS .active highlights the dot)
+// Update the progress dots (IDs d1..d3) to highlight the current step
 function updateDots() {
-  document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('active'));
-  const activeDot = document.getElementById('d' + state);
-  if (activeDot) {
-    activeDot.classList.add('active');
-  }
+  document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+  const dot = document.getElementById('d' + state);
+  if (dot) dot.classList.add('active');
 }
 
-// Show the review overlay with both images and action buttons
+// Show the review screen with both images and generate/restart options
 function showReview() {
   updateDots();
   const overlay = document.getElementById('overlay');
-  if (!overlay) {
-    console.error('Overlay element (#overlay) not found');
-    return;
-  }
-  // Build the review HTML (glass-card, images, Generate/Restart buttons)
   overlay.innerHTML = `
     <div class="glass-card">
       <h1>Review</h1>
       <div class="preview">
-        <img src="${customerImage}" alt="Customer Photo">
-        <img src="${clothImage}" alt="Cloth Photo">
+        <img src="${customerImage}" alt="Customer Image">
+        <img src="${clothImage}" alt="Clothing Image">
       </div>
       <div class="actions">
-        <button class="btn-primary" onclick="generateAI()">Generate</button>
-        <button class="btn-secondary" onclick="location.reload()">Restart</button>
+        <button class="btn-primary" onclick="generateAI()">Generate Try-On</button>
+        <button class="btn-secondary" onclick="reset()">Restart</button>
       </div>
     </div>
   `;
-  console.log('Review screen displayed');
 }
 
-// Call the AI backend to generate the try-on result
+// Call the AI backend to combine images
 async function generateAI() {
+  vibrate(100);
   const overlay = document.getElementById('overlay');
-  if (!overlay) {
-    console.error('Overlay element (#overlay) not found');
-    return;
-  }
-  // Show loading indicator
+  // Show a loading state
   overlay.innerHTML = `
     <div class="glass-card">
       <div class="loader"></div>
       <p style="text-align:center">Generating AI Try-On...</p>
     </div>
   `;
-  console.log('Sending images to AI backend');
-  const API_URL = 'https://ai-fashion-api.onrender.com/generate'; // Provided backend URL
   try {
-    // Use AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ personImage: customerImage, clothImage: clothImage }),
-      signal: controller.signal
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ personImage: customerImage, clothImage: clothImage })
     });
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
+      throw new Error('Network response was not OK');
     }
     const data = await response.json();
-    const result = data.result || data.output || data.image || '';
-    if (!result) {
-      throw new Error('Empty response from AI service');
-    }
-    console.log('AI generation successful, displaying result');
-    // Display result image
+    // Support different response fields
+    const resultURL = data.result || data.image || data.output;
     overlay.innerHTML = `
       <div class="glass-card">
         <h1>Result</h1>
-        <img class="result" src="${result}" alt="AI Try-On Result">
+        <img class="result" src="${resultURL}" alt="Try-On Result">
         <div class="actions">
-          <button class="btn-primary" onclick="location.reload()">Start Again</button>
+          <button class="btn-primary" onclick="location.reload()">New Try-On</button>
         </div>
       </div>
     `;
+    updateDots();
   } catch (err) {
-    console.error('AI generation failed:', err);
+    console.error('AI generation error:', err);
     overlay.innerHTML = `
       <div class="glass-card error-card">
         <h3>Generation Failed</h3>
         <p>${err.message}</p>
-        <button class="btn-secondary" onclick="location.reload()">Try Again</button>
+        <button class="btn-secondary" onclick="reset()">Try Again</button>
       </div>
     `;
   }
 }
 
-// Expose functions globally (the HTML uses these names)
+// Reset to the initial state (Customer capture)
+function reset() {
+  state = 1;
+  customerImage = null;
+  clothImage = null;
+  document.getElementById('title').textContent = 'Customer Capture';
+  document.getElementById('subtitle').textContent = 'Capture customer image or upload photo';
+  const overlay = document.getElementById('overlay');
+  overlay.innerHTML = `
+    <div class="glass-card">
+      <h1 id="title">Customer Capture</h1>
+      <p id="subtitle">Capture customer image or upload photo</p>
+      <div class="actions">
+        <input type="file" id="fileInput" accept="image/*" hidden>
+        <button class="btn-primary" onclick="capture()">Capture</button>
+        <button class="btn-secondary" onclick="openUpload()">Upload</button>
+      </div>
+    </div>
+  `;
+  // Re-attach the file input listener after injecting new HTML
+  const newFileInput = document.getElementById('fileInput');
+  if (newFileInput) newFileInput.addEventListener('change', handleUpload);
+  updateDots();
+  startCamera();
+}
+
+// Debug helper (inspect the current state)
+function dumpState() {
+  console.log({state, facingMode, customerImage, clothImage});
+}
+
+// Expose functions for onclick handlers in HTML
 window.capture = capture;
 window.openUpload = openUpload;
 window.switchCamera = switchCamera;
 window.generateAI = generateAI;
+window.reset = reset;
