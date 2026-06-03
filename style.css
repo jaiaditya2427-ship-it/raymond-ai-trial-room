@@ -372,3 +372,17 @@ flex-direction:column;
     opacity: 0;
   }
 }
+#switchCam{
+position:absolute;
+top:25px;
+right:20px;
+z-index:999;
+width:52px;
+height:52px;
+border:none;
+border-radius:50%;
+background:rgba(0,0,0,.55);
+color:#fff;
+font-size:22px;
+backdrop-filter:blur(20px);
+}
