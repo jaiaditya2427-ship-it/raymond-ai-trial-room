@@ -99,59 +99,6 @@ startCamera();
 }
 
 /* =========================
-   CAMERA START
-========================= */
-
-/* =========================
-   CAMERA START
-========================= */
-
-async function startCamera(){
-
-try{
-
-if(stream){
-stream.getTracks().forEach(track => track.stop());
-}
-
-stream = await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode: currentFacingMode
-},
-audio:false
-});
-
-const video = document.getElementById("video");
-
-if(video){
-video.srcObject = stream;
-await video.play();
-}
-
-}catch(err){
-
-console.log(err);
-alert("Camera not allowed or not supported (Use HTTPS)");
-
-}
-
-}
-
-function switchCamera(){
-
-playShutter();
-vibrate();
-
-currentFacingMode =
-currentFacingMode === "environment"
-? "user"
-: "environment";
-
-startCamera();
-
-}
-
-/* =========================
    CAPTURE IMAGE
 ========================= */
 
@@ -304,16 +251,21 @@ document.getElementById("aiScreen")?.classList.remove("hidden");
 
 try{
 
-const res = await fetch("https://ai-fashion-api.onrender.com/generate", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    personImage: customerImage,
-    clothImage: clothImage
-  })
+const res = await fetch(
+"https://ai-fashion-api.onrender.com/generate",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+personImage:customerImage,
+clothImage:clothImage
 })
+}
+);
+
+const data = await res.json();
 .then(res => res.json())
 .then(data => {
   console.log(data);
