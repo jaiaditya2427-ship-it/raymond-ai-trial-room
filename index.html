@@ -1,87 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
 
-<title>AI Try-On Studio</title>
+  <title>AI Try-On Studio</title>
 
-<link rel="stylesheet" href="style.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
+  <div class="background-blur"></div>
 
-<div class="background-blur"></div>
-
-
-<div class="topbar">
+  <div class="topbar">
     <div class="dot active" id="d1"></div>
     <div class="dot" id="d2"></div>
     <div class="dot" id="d3"></div>
     <div class="dot" id="d4"></div>
-</div>
+  </div>
 
-<div class="container">
-
+  <div class="container">
     <video
-        id="video"
-        autoplay
-        playsinline
-        muted>
-
+      id="video"
+      autoplay
+      playsinline
+      webkit-playsinline
+      muted>
     </video>
-<button id="switchCam" onclick="switchCamera()">
-🔄
-</button>
+
+    <button id="switchCam" onclick="switchCamera()">
+      🔄
+    </button>
+
     <div class="overlay" id="overlay">
+      <div class="glass-card">
+        <h1 id="title">Customer Capture</h1>
 
-        <div class="glass-card">
+        <p id="subtitle">
+          Capture customer image or upload photo
+        </p>
 
-            <h1 id="title">
-                Customer Capture
-            </h1>
+        <div class="actions">
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            id="fileInput"
+            hidden>
 
-            <p id="subtitle">
-                Capture customer image or upload photo
+          <button class="btn-primary" onclick="capture()">
+            Capture
+          </button>
 
-            </p>
-
-            <div class="actions">
-
-                <input
-type="file"
-accept="image/*,camera/*"
-id="fileInput"
-hidden>
-
-                <button
-                    class="btn-primary"
-                    onclick="capture()">
-                    Capture
-                </button>
-
-                <button
-                    class="btn-secondary"
-                    onclick="openUpload()">
-                    Upload
-                </button>
-
-            </div>
-
-
+          <button class="btn-secondary" onclick="openUpload()">
+            Upload
+          </button>
         </div>
-
+      </div>
     </div>
+  </div>
 
-</div>
+  <div class="shutter-flash" id="flash"></div>
 
-    <div class="shutter-flash" id="flash"></div>
-    
-<script src="app.js"></script>
-
+  <script defer src="app.js"></script>
 </body>
 </html>
