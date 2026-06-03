@@ -8,17 +8,25 @@ let clothImage = "";
 const API_URL =
 "https://ai-fashion-api.onrender.com/generate";
 
-document.addEventListener("DOMContentLoaded", () => {
-
-startCamera();
+document.addEventListener("DOMContentLoaded", async () => {
 
 const fileInput =
 document.getElementById("fileInput");
 
+if (fileInput) {
 fileInput.addEventListener(
 "change",
 handleUpload
 );
+}
+
+updateDots();
+
+try {
+await startCamera();
+} catch (e) {
+console.error(e);
+}
 
 });
 
@@ -34,7 +42,9 @@ try {
 
 ```
 const video =
-  document.getElementById("video");
+document.getElementById("video");
+
+if (!video) return;
 
 if (stream) {
   stream
@@ -43,13 +53,14 @@ if (stream) {
 }
 
 stream =
-  await navigator.mediaDevices
-    .getUserMedia({
-      video: {
-        facingMode
-      },
-      audio: false
-    });
+await navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: {
+      ideal: facingMode
+    }
+  },
+  audio: false
+});
 
 video.srcObject = stream;
 
@@ -59,12 +70,12 @@ await video.play();
 } catch (err) {
 
 ```
+console.error(err);
+
 alert(
   "Camera Error: " +
   err.message
 );
-
-console.error(err);
 ```
 
 }
@@ -83,14 +94,19 @@ await startCamera();
 }
 
 function openUpload() {
-document
-.getElementById("fileInput")
-.click();
+
+const fileInput =
+document.getElementById("fileInput");
+
+if (fileInput) {
+fileInput.click();
+}
 }
 
 function handleUpload(e) {
 
-const file = e.target.files[0];
+const file =
+e.target.files[0];
 
 if (!file) return;
 
@@ -124,16 +140,23 @@ flash.classList.remove(
 
 function capture() {
 
-vibrate(50);
-flashEffect();
-
 const video =
 document.getElementById("video");
 
+if (
+!video ||
+!video.videoWidth ||
+!video.videoHeight
+) {
+alert("Camera not ready");
+return;
+}
+
+vibrate(50);
+flashEffect();
+
 const canvas =
-document.createElement(
-"canvas"
-);
+document.createElement("canvas");
 
 canvas.width =
 video.videoWidth;
@@ -165,17 +188,18 @@ if (state === 1) {
 
 ```
 customerImage = image;
+
 state = 2;
 
 document.getElementById(
   "title"
 ).textContent =
-  "Cloth Capture";
+"Cloth Capture";
 
 document.getElementById(
   "subtitle"
 ).textContent =
-  "Capture or upload cloth";
+"Capture or upload cloth";
 
 updateDots();
 
@@ -188,6 +212,7 @@ if (state === 2) {
 
 ```
 clothImage = image;
+
 state = 3;
 
 showReview();
@@ -239,15 +264,15 @@ document.getElementById(
 <div class="actions">
 
   <button
-    class="btn-primary"
-    onclick="generateAI()">
-    Generate
+  class="btn-primary"
+  onclick="generateAI()">
+  Generate
   </button>
 
   <button
-    class="btn-secondary"
-    onclick="location.reload()">
-    Restart
+  class="btn-secondary"
+  onclick="location.reload()">
+  Restart
   </button>
 
 </div>
@@ -280,32 +305,32 @@ try {
 
 ```
 const response =
-  await fetch(
-    API_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body:
-        JSON.stringify({
-          personImage:
-            customerImage,
-          clothImage:
-            clothImage
-        })
-    }
-  );
+await fetch(
+  API_URL,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type":
+      "application/json"
+    },
+    body:
+    JSON.stringify({
+      personImage:
+      customerImage,
+      clothImage:
+      clothImage
+    })
+  }
+);
 
 const data =
-  await response.json();
+await response.json();
 
 const result =
-  data.result ||
-  data.output ||
-  data.image ||
-  "";
+data.result ||
+data.output ||
+data.image ||
+"";
 
 document.getElementById(
   "overlay"
@@ -316,16 +341,15 @@ document.getElementById(
   <h1>Result</h1>
 
   <img
-    class="result"
-    src="${result}"
-  >
+  class="result"
+  src="${result}">
 
   <div class="actions">
 
     <button
-      class="btn-primary"
-      onclick="location.reload()">
-      Start Again
+    class="btn-primary"
+    onclick="location.reload()">
+    Start Again
     </button>
 
   </div>
@@ -344,9 +368,7 @@ document.getElementById(
 ).innerHTML = `
 
 <div class="error-card">
-
   AI generation failed
-
 </div>
 `;
 ```
