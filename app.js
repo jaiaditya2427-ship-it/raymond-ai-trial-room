@@ -1,6 +1,8 @@
 let stream;
 let state = 1;
 
+let currentFacingMode = "environment";
+
 let customerImage = "";
 let clothImage = "";
 
@@ -72,6 +74,40 @@ ripple.remove();
 ========================= */
 
 async function startCamera(){
+function switchCamera(){
+
+playShutter();
+vibrate();
+
+currentFacingMode =
+currentFacingMode === "environment"
+? "user"
+: "environment";
+
+startCamera();
+
+}
+try{
+
+if(stream){
+stream.getTracks().forEach(track => track.stop());
+}
+
+stream = await navigator.mediaDevices.getUserMedia({
+video:{
+facingMode: currentFacingMode
+},
+audio:false
+});
+
+document.getElementById("video").srcObject = stream;
+
+}catch(err){
+alert("Camera not allowed or not supported (use HTTPS)");
+console.log(err);
+}
+
+}
 
 try{
 
@@ -235,7 +271,7 @@ document.getElementById("aiScreen")?.classList.remove("hidden");
 
 try{
 
-const res = await fetch("YOUR_API_URL_HERE",{
+const res = await fetch("https://ai-fashion-api.onrender.com",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
