@@ -292,6 +292,12 @@ document.getElementById("overlay").innerHTML = `
 
 <img class="result" src="${data.result}">
 
+<a href="${data.result}" download>
+<button class="btn-primary">
+Save Result
+</button>
+</a>
+
 </div>
 `;
 
