@@ -235,28 +235,6 @@ reader.readAsDataURL(file);
 
 }
 
-const file = e.target.files[0];
-const reader = new FileReader();
-
-reader.onload = function(ev){
-
-if(state === 1){
-customerImage = ev.target.result;
-state = 2;
-updateUI();
-}
-
-else if(state === 2){
-clothImage = ev.target.result;
-state = 3;
-updateUI();
-}
-
-};
-
-reader.readAsDataURL(file);
-
-});
 
 /* =========================
    E) UI FLOW (STATE SYSTEM)
