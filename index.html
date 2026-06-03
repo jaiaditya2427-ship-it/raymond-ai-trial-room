@@ -34,7 +34,9 @@
         muted>
 
     </video>
-
+<button id="switchCam" onclick="switchCamera()">
+🔄
+</button>
     <div class="overlay" id="overlay">
 
         <div class="glass-card">
@@ -51,10 +53,10 @@
             <div class="actions">
 
                 <input
-                    type="file"
-                    accept="image/*"
-                    id="fileInput"
-                    hidden>
+type="file"
+accept="image/*,camera/*"
+id="fileInput"
+hidden>
 
                 <button
                     class="btn-primary"
