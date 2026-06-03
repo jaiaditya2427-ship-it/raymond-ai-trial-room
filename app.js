@@ -102,20 +102,12 @@ startCamera();
    CAMERA START
 ========================= */
 
+/* =========================
+   CAMERA START
+========================= */
+
 async function startCamera(){
-function switchCamera(){
 
-playShutter();
-vibrate();
-
-currentFacingMode =
-currentFacingMode === "environment"
-? "user"
-: "environment";
-
-startCamera();
-
-}
 try{
 
 if(stream){
@@ -129,30 +121,33 @@ facingMode: currentFacingMode
 audio:false
 });
 
-document.getElementById("video").srcObject = stream;
+const video = document.getElementById("video");
+
+if(video){
+video.srcObject = stream;
+await video.play();
+}
 
 }catch(err){
-alert("Camera not allowed or not supported (use HTTPS)");
+
 console.log(err);
-}
+alert("Camera not allowed or not supported (Use HTTPS)");
 
 }
 
-try{
-
-stream = await navigator.mediaDevices.getUserMedia({
-video:{
-facingMode:{ ideal:"environment" }
-},
-audio:false
-});
-
-document.getElementById("video").srcObject = stream;
-
-}catch(err){
-alert("Camera not allowed or not supported (use HTTPS)");
-console.log(err);
 }
+
+function switchCamera(){
+
+playShutter();
+vibrate();
+
+currentFacingMode =
+currentFacingMode === "environment"
+? "user"
+: "environment";
+
+startCamera();
 
 }
 
@@ -207,7 +202,38 @@ function openUpload(){
 document.getElementById("fileInput").click();
 }
 
-document.getElementById("fileInput").addEventListener("change",(e)=>{
+const fileInput = document.getElementById("fileInput");
+
+if(fileInput){
+
+fileInput.addEventListener("change",(e)=>{
+
+const file = e.target.files[0];
+
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onload = function(ev){
+
+if(state === 1){
+customerImage = ev.target.result;
+state = 2;
+updateUI();
+}
+else if(state === 2){
+clothImage = ev.target.result;
+state = 3;
+updateUI();
+}
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+}
 
 const file = e.target.files[0];
 const reader = new FileReader();
@@ -300,13 +326,22 @@ document.getElementById("aiScreen")?.classList.remove("hidden");
 
 try{
 
-const res = await fetch("https://ai-fashion-api.onrender.com",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-personImage: customerImage,
-clothImage: clothImage
+const res = await fetch("https://ai-fashion-api.onrender.com/generate", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    personImage: customerImage,
+    clothImage: clothImage
+  })
 })
+.then(res => res.json())
+.then(data => {
+  console.log(data);
+})
+.catch(err => {
+  console.error(err);
 });
 
 const data = await res.json();
