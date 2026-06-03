@@ -1,40 +1,14 @@
 let stream = null;
 let facingMode = "environment";
 
-let state = 1;
-let customerImage = null;
-let clothImage = null;
-
-let video;
-let overlay;
-let fileInput;
-
-document.addEventListener("DOMContentLoaded", () => {
-video = document.getElementById("video");
-overlay = document.getElementById("overlay");
-fileInput = document.getElementById("fileInput");
-
-if (fileInput) {
-fileInput.addEventListener("change", handleUpload);
-}
-
-startCamera();
-updateDots();
-});
-
-function vibrate(ms = 30) {
-if (navigator.vibrate) {
-navigator.vibrate(ms);
-}
-}
-
 async function startCamera() {
 try {
-if (stream) {
-stream.getTracks().forEach(track => track.stop());
-}
 
 ```
+if (stream) {
+  stream.getTracks().forEach(track => track.stop());
+}
+
 stream = await navigator.mediaDevices.getUserMedia({
   video: {
     facingMode: facingMode
@@ -42,34 +16,20 @@ stream = await navigator.mediaDevices.getUserMedia({
   audio: false
 });
 
+const video = document.getElementById("video");
+
 video.srcObject = stream;
 
-video.onloadedmetadata = async () => {
-  try {
-    await video.play();
-  } catch (e) {
-    console.error(e);
-  }
-};
+await video.play();
 ```
 
 } catch (err) {
+alert("Camera Error: " + err.message);
 console.error(err);
-
-```
-overlay.innerHTML = `
-  <div class="glass-card">
-    <h1>Camera Error</h1>
-    <p>${err.message}</p>
-  </div>
-`;
-```
-
 }
 }
 
 async function switchCamera() {
-vibrate();
 
 facingMode =
 facingMode === "environment"
@@ -80,202 +40,91 @@ await startCamera();
 }
 
 function openUpload() {
-fileInput.click();
+document.getElementById("fileInput").click();
 }
 
-function handleUpload(e) {
+document.addEventListener("DOMContentLoaded", () => {
+
+const fileInput =
+document.getElementById("fileInput");
+
+fileInput.addEventListener("change", e => {
+
+```
 const file = e.target.files[0];
 
 if (!file) return;
 
 const reader = new FileReader();
 
-reader.onload = (ev) => {
-processImage(ev.target.result);
+reader.onload = event => {
+
+  const img = new Image();
+
+  img.src = event.target.result;
+
+  img.style.maxWidth = "250px";
+  img.style.borderRadius = "20px";
+
+  const overlay =
+    document.getElementById("overlay");
+
+  overlay.innerHTML = "";
+
+  overlay.appendChild(img);
 };
 
 reader.readAsDataURL(file);
-}
+```
+
+});
+
+startCamera();
+
+});
 
 function capture() {
-vibrate(50);
 
-if (!video || !video.videoWidth) {
+const video =
+document.getElementById("video");
+
+if (!video.videoWidth) {
 alert("Camera not ready");
 return;
 }
 
-const canvas = document.createElement("canvas");
+const canvas =
+document.createElement("canvas");
+
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
 
-const ctx = canvas.getContext("2d");
-ctx.drawImage(video, 0, 0);
+const ctx =
+canvas.getContext("2d");
 
-const image = canvas.toDataURL("image/jpeg", 0.95);
-
-processImage(image);
-}
-
-function processImage(image) {
-
-if (state === 1) {
-
-```
-customerImage = image;
-state = 2;
-
-document.getElementById("title").textContent =
-  "Cloth Capture";
-
-document.getElementById("subtitle").textContent =
-  "Capture or upload garment image";
-
-updateDots();
-return;
-```
-
-}
-
-if (state === 2) {
-
-```
-clothImage = image;
-state = 3;
-
-showReview();
-```
-
-}
-}
-
-function updateDots() {
-
-document
-.querySelectorAll(".dot")
-.forEach(dot => dot.classList.remove("active"));
-
-const active =
-document.getElementById("d" + state);
-
-if (active) {
-active.classList.add("active");
-}
-}
-
-function showReview() {
-
-updateDots();
-
-overlay.innerHTML = ` <div class="glass-card">
-
-```
-  <h1>Review</h1>
-
-  <div class="preview">
-    <img src="${customerImage}">
-    <img src="${clothImage}">
-  </div>
-
-  <div class="actions">
-
-    <button
-      class="btn-primary"
-      onclick="generateAI()">
-      Generate
-    </button>
-
-    <button
-      class="btn-secondary"
-      onclick="location.reload()">
-      Restart
-    </button>
-
-  </div>
-
-</div>
-```
-
-`;
-}
-
-async function generateAI() {
-
-overlay.innerHTML = ` <div class="glass-card">
-
-```
-  <div class="loader"></div>
-
-  <p style="text-align:center">
-    Generating AI Try-On...
-  </p>
-
-</div>
-```
-
-`;
-
-try {
-
-```
-const response = await fetch(
-  "https://ai-fashion-api.onrender.com/generate",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      personImage: customerImage,
-      clothImage: clothImage
-    })
-  }
+ctx.drawImage(
+video,
+0,
+0,
+canvas.width,
+canvas.height
 );
 
-const data = await response.json();
+const image =
+canvas.toDataURL("image/jpeg");
 
-const resultImage =
-  data.result ||
-  data.image ||
-  data.output ||
-  "";
+const preview =
+document.createElement("img");
 
-overlay.innerHTML = `
-  <div class="glass-card">
+preview.src = image;
 
-    <h1>Result</h1>
+preview.style.maxWidth = "250px";
+preview.style.borderRadius = "20px";
 
-    <img
-      class="result"
-      src="${resultImage}"
-    >
+const overlay =
+document.getElementById("overlay");
 
-    <div class="actions">
+overlay.innerHTML = "";
 
-      <button
-        class="btn-primary"
-        onclick="location.reload()">
-        Try Again
-      </button>
-
-    </div>
-
-  </div>
-`;
-```
-
-} catch (err) {
-
-```
-console.error(err);
-
-overlay.innerHTML = `
-  <div class="error-card">
-    <h3>Generation Failed</h3>
-    <p>${err.message}</p>
-  </div>
-`;
-```
-
-}
+overlay.appendChild(preview);
 }
